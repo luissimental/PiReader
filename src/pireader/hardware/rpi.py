@@ -16,7 +16,8 @@ class RaspberryPi:
     ) -> gpiozero.DigitalInputDevice:
         """Allocate an input pin from the Raspberry Pi."""
         if pin in self._devices:
-            raise RuntimeError
+            msg = f"Input pin is already allocated: {pin}"
+            raise RuntimeError(msg)
 
         device = gpiozero.DigitalInputDevice(pin, pull_up=pull_up)
         self._devices[pin] = device
@@ -25,7 +26,8 @@ class RaspberryPi:
     def request_output_pin(self, pin: int) -> gpiozero.DigitalOutputDevice:
         """Allocate an output pin from the Raspberry Pi."""
         if pin in self._devices:
-            raise RuntimeError
+            msg = f"Output pin is already allocated: {pin}"
+            raise RuntimeError(msg)
 
         device = gpiozero.DigitalOutputDevice(pin)
         self._devices[pin] = device
@@ -34,7 +36,8 @@ class RaspberryPi:
     def release_pin(self, pin: int) -> None:
         """Release and close a pin from the Raspberry Pi."""
         if pin not in self._devices:
-            raise RuntimeError
+            msg = f"Cannot release a non-existant pin: {pin}"
+            raise RuntimeError(msg)
 
         device = self._devices.pop(pin)
         device.close()
