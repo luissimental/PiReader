@@ -9,8 +9,15 @@
     "ruff.lineLength": 79,
     "ruff.lint.select": ["ALL"],
     "ruff.lint.ignore": [
+        "COM812",
         "CPY001",
         "D100",
         "D104",
+        "D107",
     ],
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
 }
