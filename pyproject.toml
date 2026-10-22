@@ -5,6 +5,7 @@ readme = "README.md"
 requires-python = ">=3.15"
 dependencies = [
     "gpiozero>=2.0.1.post3",
+    "spidev",
 ]
 
 [project.scripts]

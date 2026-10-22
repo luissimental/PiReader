@@ -10,6 +10,144 @@ def mock_gpiozero(mocker: pytest_mock.MockerFixture) -> pytest_mock.MockType:
     return mocker.patch("pireader.hardware.rpi.gpiozero")
 
 
+@pytest.fixture
+def mock_spidev(mocker: pytest_mock.MockerFixture) -> pytest_mock.MockType:
+    """Mock spidev.Spidev."""
+    return mocker.patch("pireader.hardware.rpi.spidev.SpiDev")
+
+
+class TestRaspberryPiEnableSpi:
+    """RaspberryPi enable_spi."""
+
+    def test_enable_spi_success(
+        self, mock_spidev: pytest_mock.MockType
+    ) -> None:
+        """SPI is enabled successfully."""
+        platform = rpi.RaspberryPi()
+
+        platform.enable_spi()
+
+        mock_spidev.return_value.open.assert_called_once()
+        assert platform._spi_enabled
+
+    def test_spi_already_enabled(
+        self, mock_spidev: pytest_mock.MockType
+    ) -> None:
+        """SPI is already enabled."""
+        platform = rpi.RaspberryPi()
+        platform._spi_enabled = True
+
+        platform.enable_spi()
+
+        mock_spidev.return_value.open.assert_not_called()
+        assert platform._spi_enabled
+
+
+class TestRaspberryPiCloseSpi:
+    """RaspberryPi close_spi."""
+
+    def test_close_spi_success(
+        self, mock_spidev: pytest_mock.MockType
+    ) -> None:
+        """SPI is closed successfully."""
+        platform = rpi.RaspberryPi()
+        platform._spi_enabled = True
+
+        platform.close_spi()
+
+        mock_spidev.return_value.close.assert_called_once()
+        assert not platform._spi_enabled
+
+    def test_spi_is_already_closed(
+        self, mock_spidev: pytest_mock.MockType
+    ) -> None:
+        """SPI is already closed."""
+        platform = rpi.RaspberryPi()
+
+        platform.close_spi()
+
+        mock_spidev.return_value.close.assert_not_called()
+        assert not platform._spi_enabled
+
+
+class TestRaspberryPiSpiWriteBytes:
+    """RaspberryPi spi_write_bytes."""
+
+    def test_spi_write_bytes_successful(
+        self, mock_spidev: pytest_mock.MockType
+    ) -> None:
+        """SPI writebytes is successful."""
+        platform = rpi.RaspberryPi()
+        platform._spi_enabled = True
+        mock_data = [0x03, 0x04, 0x05]
+
+        platform.spi_write_bytes(mock_data)
+
+        mock_spidev.return_value.writebytes.assert_called_once_with(mock_data)
+
+    def test_spi_write_bytes_skips_on_empty_data(
+        self, mock_spidev: pytest_mock.MockType
+    ) -> None:
+        """SPI writebytes skips when data is empty."""
+        platform = rpi.RaspberryPi()
+        platform._spi_enabled = True
+
+        platform.spi_write_bytes([])
+
+        mock_spidev.return_value.writebytes.assert_not_called()
+
+    def test_spi_write_bytes_fails_on_closed_spi(
+        self, mock_spidev: pytest_mock.MockType
+    ) -> None:
+        """SPI writebytes fails when SPI is closed."""
+        platform = rpi.RaspberryPi()
+        mock_data = [0x03, 0x04, 0x05]
+
+        with pytest.raises(RuntimeError):
+            platform.spi_write_bytes(mock_data)
+
+        mock_spidev.return_value.writebytes.assert_not_called()
+
+
+class TestRaspberryPiSpiWriteBytes2:
+    """RaspberryPi spi_write_bytes2."""
+
+    def test_spi_write_bytes2_successful(
+        self, mock_spidev: pytest_mock.MockType
+    ) -> None:
+        """SPI writebytes2 is successful."""
+        platform = rpi.RaspberryPi()
+        platform._spi_enabled = True
+        mock_data = [0x03, 0x04, 0x05]
+
+        platform.spi_write_bytes2(mock_data)
+
+        mock_spidev.return_value.writebytes2.assert_called_once_with(mock_data)
+
+    def test_spi_write_bytes2_skips_on_empty_data(
+        self, mock_spidev: pytest_mock.MockType
+    ) -> None:
+        """SPI writebytes2 skips when data is empty."""
+        platform = rpi.RaspberryPi()
+        platform._spi_enabled = True
+
+        platform.spi_write_bytes2([])
+
+        mock_spidev.return_value.writebytes2.assert_not_called()
+
+    def test_spi_write_bytes2_fails_on_closed_spi(
+        self, mock_spidev: pytest_mock.MockType
+    ) -> None:
+        """SPI writebytes2 fails when SPI is closed."""
+        platform = rpi.RaspberryPi()
+        mock_data = [0x03, 0x04, 0x05]
+
+        with pytest.raises(RuntimeError):
+            platform.spi_write_bytes2(mock_data)
+
+        mock_spidev.return_value.writebytes2.assert_not_called()
+
+
 class TestRaspberryPiRequestInputPin:
     """RaspberryPi request_input_pin."""
 
@@ -104,19 +242,35 @@ class TestRaspberryPiCleanUp:
     """RaspberryPi clean_up."""
 
     def test_clean_up_successfully(
-        self, mocker: pytest_mock.MockerFixture
+        self,
+        mocker: pytest_mock.MockerFixture,
+        mock_spidev: pytest_mock.MockType,
     ) -> None:
         """Close all pins and devices dict is empty."""
         mock_pin1 = mocker.Mock()
         mock_pin2 = mocker.Mock()
         platform = rpi.RaspberryPi()
         platform._devices = {10: mock_pin1, 11: mock_pin2}
+        platform._spi_enabled = True
 
         platform.clean_up()
 
+        mock_spidev.return_value.close.assert_called_once()
         mock_pin1.close.assert_called_once()
         mock_pin2.close.assert_called_once()
         assert len(platform._devices) == 0
+        assert not platform._spi_enabled
+
+    def test_clean_up_skips_spi_close(
+        self, mock_spidev: pytest_mock.MockType
+    ) -> None:
+        """SPI is already closed."""
+        platform = rpi.RaspberryPi()
+
+        platform.clean_up()
+
+        mock_spidev.return_value.close.assert_not_called()
+        assert not platform._spi_enabled
 
 
 class TestRaspberryPiAsContextManager:
