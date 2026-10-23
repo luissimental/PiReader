@@ -5,19 +5,24 @@ import gpiozero
 import smbus2
 import spidev
 
+from pireader import config
 from pireader.hardware import hal
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-I2C_BUS = 3
-
-
 class RaspberryPi(hal.PlatformHAL):
     """Manage hardware resources for the Raspberry Pi platform."""
 
-    def __init__(self) -> None:
+    def __init__(self, i2c_bus: int = config.RPI_I2C_BUS) -> None:
+        """Initialize the Raspberry Pi hardware resource manager.
+
+        Args:
+          i2c_bus:
+            The configured I2C bus for the Raspberry Pi.
+
+        """
         self._spi = spidev.SpiDev()
         self._i2c = smbus2.SMBus()
         self._devices: dict[
@@ -26,6 +31,8 @@ class RaspberryPi(hal.PlatformHAL):
 
         self._spi_enabled = False
         self._i2c_enabled = False
+
+        self._i2c_bus = i2c_bus
 
         self._spi_lock = threading.Lock()
         self._i2c_lock = threading.Lock()
@@ -81,7 +88,7 @@ class RaspberryPi(hal.PlatformHAL):
             if self._i2c_enabled:
                 return
 
-            self._i2c.open(I2C_BUS)
+            self._i2c.open(self._i2c_bus)
             self._i2c_enabled = True
 
     @override
