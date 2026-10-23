@@ -40,13 +40,13 @@ class PlatformHAL(abc.ABC):
         """Read a single byte from a given register.
 
         Args:
-            i2c_addr:
-                The i2c address.
-            reg:
-                The start register.
+          i2c_addr:
+            The i2c address.
+          reg:
+            The start register.
 
         Returns:
-            The read byte value.
+          The read byte value.
 
         """
 
@@ -57,15 +57,15 @@ class PlatformHAL(abc.ABC):
         """Read a block of byte data from a given register.
 
         Args:
-            i2c_addr:
-                The i2c address.
-            reg:
-                The start register.
-            length:
-                The desired block length. Must be at least 1.
+          i2c_addr:
+            The i2c address.
+          reg:
+            The start register.
+          length:
+            The desired block length. Must be at least 1.
 
         Returns:
-            The list of bytes.
+          The list of bytes.
 
         """
 
@@ -76,12 +76,12 @@ class PlatformHAL(abc.ABC):
         """Write a byte or a block of data to a given register.
 
         Args:
-            i2c_addr:
-                The i2c address.
-            reg:
-                The register to write to.
-            data:
-                The byte value or list of bytes to transmit.
+          i2c_addr:
+            The i2c address.
+          reg:
+            The register to write to.
+          data:
+            The byte value or list of bytes to transmit.
 
         """
 
