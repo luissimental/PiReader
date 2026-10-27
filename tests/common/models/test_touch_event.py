@@ -30,6 +30,33 @@ class TestTouchEventDistanceTo:
         assert math.isclose(distance, math.sqrt(2))
 
 
+class TestTouchEventMidpointTo:
+    """TouchEvent midpoint_to."""
+
+    def test_midpoint_to_success(self) -> None:
+        """Returns correct midpoint."""
+        point1 = utils.new_touch(-100, 5, -1)
+        point2 = utils.new_touch(120, 25, -1)
+
+        midpoint = point1.midpoint_to(point2)
+
+        assert midpoint.x == 10
+        assert midpoint.y == 15
+
+
+class TestTouchEventDegreesTo:
+    """TouchEvent degrees_to."""
+
+    def test_degrees_to_success(self) -> None:
+        """Returns correct degrees."""
+        point1 = utils.new_touch(-100, 0, -1)
+        point2 = utils.new_touch(0, 100, -1)
+
+        degrees = point1.degrees_to(point2)
+
+        assert degrees == 45
+
+
 class TestTouchEventClockOffsetFrom:
     """TouchEvent clock_offset_from."""
 
