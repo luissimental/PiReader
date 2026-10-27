@@ -118,7 +118,7 @@ class TestSingleTouchFSMOnTouchDown:
 
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.SingleTouchGesture)
-        assert curr_gest.type is enums.SingleTouchType.DOWN
+        assert curr_gest.state is enums.SingleTouchState.DOWN
         assert curr_gest.start is point
         assert curr_gest.end is point
 
@@ -137,7 +137,7 @@ class TestSingleTouchFSMOnHold:
 
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.SingleTouchGesture)
-        assert curr_gest.type is enums.SingleTouchType.HOLD
+        assert curr_gest.state is enums.SingleTouchState.HOLD
         assert curr_gest.start is machine._start_point
         assert curr_gest.end is point
 
@@ -165,7 +165,7 @@ class TestSingleTouchFSMOnDrag:
 
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.SingleTouchGesture)
-        assert curr_gest.type is enums.SingleTouchType.DRAG
+        assert curr_gest.state is enums.SingleTouchState.DRAG
         assert curr_gest.start is machine._start_point
         assert curr_gest.end is point
 
@@ -197,7 +197,7 @@ class TestSingleTouchFSMOnRelease:
 
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.SingleTouchGesture)
-        assert curr_gest.type is enums.SingleTouchType.FAST_TAP
+        assert curr_gest.state is enums.SingleTouchState.FAST_TAP
         assert curr_gest.start is machine._start_point
         assert curr_gest.end is machine._last_point
 
@@ -216,7 +216,7 @@ class TestSingleTouchFSMOnRelease:
 
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.SingleTouchGesture)
-        assert curr_gest.type is enums.SingleTouchType.SWIPE
+        assert curr_gest.state is enums.SingleTouchState.SWIPE
         assert curr_gest.start is machine._start_point
         assert curr_gest.end is machine._last_point
 
@@ -246,7 +246,7 @@ class TestSingleTouchFSMOnRelease:
 
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.SingleTouchGesture)
-        assert curr_gest.type is enums.SingleTouchType.SWIPE
+        assert curr_gest.state is enums.SingleTouchState.SWIPE
         assert curr_gest.direction is direction
 
     def test_on_release_creates_release_gesture(self) -> None:
@@ -264,7 +264,7 @@ class TestSingleTouchFSMOnRelease:
 
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.SingleTouchGesture)
-        assert curr_gest.type is enums.SingleTouchType.RELEASE
+        assert curr_gest.state is enums.SingleTouchState.RELEASE
         assert curr_gest.start is machine._start_point
         assert curr_gest.end is machine._last_point
 
@@ -344,7 +344,7 @@ class TestSingleTouchFSMGenerateGesture:
         assert machine._start_point is down_point
         assert machine._last_point is down_point
         assert isinstance(result, models.SingleTouchGesture)
-        assert result.type is enums.SingleTouchType.DOWN
+        assert result.state is enums.SingleTouchState.DOWN
 
     def test_generate_down_to_contact(self) -> None:
         """DOWN -> contact (None) -> return."""
@@ -374,7 +374,7 @@ class TestSingleTouchFSMGenerateGesture:
         assert machine._start_point is down_point
         assert machine._last_point is contact_point
         assert isinstance(result, models.SingleTouchGesture)
-        assert result.type is enums.SingleTouchType.RELEASE
+        assert result.state is enums.SingleTouchState.RELEASE
 
     def test_generate_down_to_contact_to_release_to_down(self) -> None:
         """DOWN -> contact (None) -> RELEASE -> DOWN -> return."""
@@ -392,7 +392,7 @@ class TestSingleTouchFSMGenerateGesture:
         assert machine._start_point is down_point2
         assert machine._last_point is down_point2
         assert isinstance(result, models.SingleTouchGesture)
-        assert result.type is enums.SingleTouchType.DOWN
+        assert result.state is enums.SingleTouchState.DOWN
 
     def test_generate_down_to_hold(self) -> None:
         """DOWN -> HOLD -> return."""
@@ -407,7 +407,7 @@ class TestSingleTouchFSMGenerateGesture:
         assert machine._start_point is down_point
         assert machine._last_point is hold_point
         assert isinstance(result, models.SingleTouchGesture)
-        assert result.type is enums.SingleTouchType.HOLD
+        assert result.state is enums.SingleTouchState.HOLD
 
     def test_generate_down_to_hold_to_release(self) -> None:
         """DOWN -> HOLD -> RELEASE -> return."""
@@ -423,7 +423,7 @@ class TestSingleTouchFSMGenerateGesture:
         assert machine._start_point is down_point
         assert machine._last_point is hold_point
         assert isinstance(result, models.SingleTouchGesture)
-        assert result.type is enums.SingleTouchType.RELEASE
+        assert result.state is enums.SingleTouchState.RELEASE
 
     def test_generate_down_to_hold_to_drag(self) -> None:
         """DOWN -> HOLD -> DRAG -> return."""
@@ -440,7 +440,7 @@ class TestSingleTouchFSMGenerateGesture:
         assert machine._start_point is down_point
         assert machine._last_point is drag_point
         assert isinstance(result, models.SingleTouchGesture)
-        assert result.type is enums.SingleTouchType.DRAG
+        assert result.state is enums.SingleTouchState.DRAG
 
     def test_generate_down_to_hold_to_contact(self) -> None:
         """DOWN -> HOLD -> contact (None) -> return."""
@@ -474,7 +474,7 @@ class TestSingleTouchFSMGenerateGesture:
         assert machine._start_point is down_point
         assert machine._last_point is contact_point
         assert isinstance(result, models.SingleTouchGesture)
-        assert result.type is enums.SingleTouchType.RELEASE
+        assert result.state is enums.SingleTouchState.RELEASE
 
     def test_generate_down_to_drag(self) -> None:
         """DOWN -> DRAG -> return."""
@@ -489,7 +489,7 @@ class TestSingleTouchFSMGenerateGesture:
         assert machine._start_point is down_point
         assert machine._last_point is drag_point
         assert isinstance(result, models.SingleTouchGesture)
-        assert result.type is enums.SingleTouchType.DRAG
+        assert result.state is enums.SingleTouchState.DRAG
 
     def test_generate_down_to_drag_to_release(self) -> None:
         """DOWN -> DRAG -> RELEASE -> return."""
@@ -505,7 +505,7 @@ class TestSingleTouchFSMGenerateGesture:
         assert machine._start_point is down_point
         assert machine._last_point is drag_point
         assert isinstance(result, models.SingleTouchGesture)
-        assert result.type is enums.SingleTouchType.RELEASE
+        assert result.state is enums.SingleTouchState.RELEASE
 
     def test_generate_down_to_drag_to_drag(self) -> None:
         """DOWN -> DRAG -> DRAG -> return."""
@@ -522,7 +522,7 @@ class TestSingleTouchFSMGenerateGesture:
         assert machine._start_point is down_point
         assert machine._last_point is drag_point2
         assert isinstance(result, models.SingleTouchGesture)
-        assert result.type is enums.SingleTouchType.DRAG
+        assert result.state is enums.SingleTouchState.DRAG
 
     def test_generate_down_to_drag_to_contact(self) -> None:
         """DOWN -> DRAG -> contact (None) -> return."""
@@ -556,7 +556,7 @@ class TestSingleTouchFSMGenerateGesture:
         assert machine._start_point is down_point
         assert machine._last_point is contact_point
         assert isinstance(result, models.SingleTouchGesture)
-        assert result.type is enums.SingleTouchType.RELEASE
+        assert result.state is enums.SingleTouchState.RELEASE
 
     def test_generate_down_to_tap(self) -> None:
         """DOWN -> FAST TAP -> return."""
@@ -572,7 +572,7 @@ class TestSingleTouchFSMGenerateGesture:
         assert machine._start_point is down_point
         assert machine._last_point is contact_point
         assert isinstance(result, models.SingleTouchGesture)
-        assert result.type is enums.SingleTouchType.FAST_TAP
+        assert result.state is enums.SingleTouchState.FAST_TAP
 
     def test_generate_down_to_swipe(self) -> None:
         """DOWN -> SWIPE -> return."""
@@ -588,4 +588,4 @@ class TestSingleTouchFSMGenerateGesture:
         assert machine._start_point is down_point
         assert machine._last_point is contact_point
         assert isinstance(result, models.SingleTouchGesture)
-        assert result.type is enums.SingleTouchType.SWIPE
+        assert result.state is enums.SingleTouchState.SWIPE

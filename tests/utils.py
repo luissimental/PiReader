@@ -9,7 +9,7 @@ def new_touch(
 
 
 def new_st_gesture(
-    type_: enums.SingleTouchType = enums.SingleTouchType.DOWN,
+    state: enums.SingleTouchState = enums.SingleTouchState.DOWN,
     *,
     start: tuple[int, int, int, int] | tuple[int, int, int] | None = None,
     end: tuple[int, int, int, int] | tuple[int, int, int] | None = None,
@@ -21,7 +21,7 @@ def new_st_gesture(
     if end is None:
         end = (-1, -1, -1)
     return models.SingleTouchGesture(
-        type=type_,
+        state=state,
         start=new_touch(*start),
         end=new_touch(*end),
         direction=direction,

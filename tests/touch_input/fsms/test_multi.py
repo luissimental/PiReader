@@ -20,31 +20,31 @@ class TestMultiTouchFSMShouldHold:
         """Both are HOLD gestures."""
         machine = multi.MultiTouchFSM()
         machine.current_state_value = machine.down.value
-        first = utils.new_st_gesture(enums.SingleTouchType.HOLD)
-        second = utils.new_st_gesture(enums.SingleTouchType.HOLD)
+        first = utils.new_st_gesture(enums.SingleTouchState.HOLD)
+        second = utils.new_st_gesture(enums.SingleTouchState.HOLD)
 
         result = machine._should_hold(first, second)
 
         assert result is True
 
     @pytest.mark.parametrize(
-        ("first_type", "second_type"),
+        ("first_state", "second_state"),
         [
-            (enums.SingleTouchType.DOWN, enums.SingleTouchType.HOLD),
-            (enums.SingleTouchType.HOLD, enums.SingleTouchType.DOWN),
-            (enums.SingleTouchType.DOWN, enums.SingleTouchType.DOWN),
+            (enums.SingleTouchState.DOWN, enums.SingleTouchState.HOLD),
+            (enums.SingleTouchState.HOLD, enums.SingleTouchState.DOWN),
+            (enums.SingleTouchState.DOWN, enums.SingleTouchState.DOWN),
         ],
     )
     def test_should_hold_returns_false_on_not_hold_gestures(
         self,
-        first_type: enums.SingleTouchType,
-        second_type: enums.SingleTouchType,
+        first_state: enums.SingleTouchState,
+        second_state: enums.SingleTouchState,
     ) -> None:
         """One or both are not HOLD gestures."""
         machine = multi.MultiTouchFSM()
         machine.current_state_value = machine.down.value
-        first = utils.new_st_gesture(first_type)
-        second = utils.new_st_gesture(second_type)
+        first = utils.new_st_gesture(first_state)
+        second = utils.new_st_gesture(second_state)
 
         result = machine._should_hold(first, second)
 
@@ -64,8 +64,8 @@ class TestMultiTouchFSMShouldHold:
         """Machine is not on down state."""
         machine = multi.MultiTouchFSM()
         machine.current_state_value = machine_state.value
-        first = utils.new_st_gesture(enums.SingleTouchType.HOLD)
-        second = utils.new_st_gesture(enums.SingleTouchType.HOLD)
+        first = utils.new_st_gesture(enums.SingleTouchState.HOLD)
+        second = utils.new_st_gesture(enums.SingleTouchState.HOLD)
 
         result = machine._should_hold(first, second)
 
@@ -76,23 +76,23 @@ class TestMultiTouchFSMShouldUpdate:
     """MultiTouchFSM _should_update."""
 
     @pytest.mark.parametrize(
-        ("first_type", "second_type"),
+        ("first_state", "second_state"),
         [
-            (enums.SingleTouchType.DOWN, enums.SingleTouchType.DRAG),
-            (enums.SingleTouchType.DRAG, enums.SingleTouchType.DOWN),
-            (enums.SingleTouchType.DRAG, enums.SingleTouchType.DRAG),
+            (enums.SingleTouchState.DOWN, enums.SingleTouchState.DRAG),
+            (enums.SingleTouchState.DRAG, enums.SingleTouchState.DOWN),
+            (enums.SingleTouchState.DRAG, enums.SingleTouchState.DRAG),
         ],
     )
     def test_should_update_returns_true_on_drag_gesture(
         self,
-        first_type: enums.SingleTouchType,
-        second_type: enums.SingleTouchType,
+        first_state: enums.SingleTouchState,
+        second_state: enums.SingleTouchState,
     ) -> None:
         """One or both are DRAG gestures."""
         machine = multi.MultiTouchFSM()
         machine.current_state_value = machine.down.value
-        first = utils.new_st_gesture(first_type)
-        second = utils.new_st_gesture(second_type)
+        first = utils.new_st_gesture(first_state)
+        second = utils.new_st_gesture(second_state)
 
         result = machine._should_update(first, second)
 
@@ -102,31 +102,31 @@ class TestMultiTouchFSMShouldUpdate:
         """None are DRAG gestures."""
         machine = multi.MultiTouchFSM()
         machine.current_state_value = machine.down.value
-        first = utils.new_st_gesture(enums.SingleTouchType.DOWN)
-        second = utils.new_st_gesture(enums.SingleTouchType.DOWN)
+        first = utils.new_st_gesture(enums.SingleTouchState.DOWN)
+        second = utils.new_st_gesture(enums.SingleTouchState.DOWN)
 
         result = machine._should_update(first, second)
 
         assert result is False
 
     @pytest.mark.parametrize(
-        ("first_type", "second_type"),
+        ("first_state", "second_state"),
         [
-            (enums.SingleTouchType.DRAG, enums.SingleTouchType.RELEASE),
-            (enums.SingleTouchType.RELEASE, enums.SingleTouchType.DRAG),
-            (enums.SingleTouchType.RELEASE, enums.SingleTouchType.RELEASE),
+            (enums.SingleTouchState.DRAG, enums.SingleTouchState.RELEASE),
+            (enums.SingleTouchState.RELEASE, enums.SingleTouchState.DRAG),
+            (enums.SingleTouchState.RELEASE, enums.SingleTouchState.RELEASE),
         ],
     )
     def test_should_update_returns_false_on_lifecycle_end(
         self,
-        first_type: enums.SingleTouchType,
-        second_type: enums.SingleTouchType,
+        first_state: enums.SingleTouchState,
+        second_state: enums.SingleTouchState,
     ) -> None:
         """One or both are lifecycle end gestures."""
         machine = multi.MultiTouchFSM()
         machine.current_state_value = machine.down.value
-        first = utils.new_st_gesture(first_type)
-        second = utils.new_st_gesture(second_type)
+        first = utils.new_st_gesture(first_state)
+        second = utils.new_st_gesture(second_state)
 
         result = machine._should_update(first, second)
 
@@ -148,7 +148,7 @@ class TestMultiTouchFSMOnTouchDown:
 
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.MultiTouchGesture)
-        assert curr_gest.type == enums.MultiTouchType.POINTER_DOWN
+        assert curr_gest.state == enums.MultiTouchState.POINTER_DOWN
         assert curr_gest.first is first
         assert curr_gest.second is second
         assert curr_gest.midpoint.x == 125
@@ -169,7 +169,7 @@ class TestMultiTouchFSMOnHold:
 
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.MultiTouchGesture)
-        assert curr_gest.type == enums.MultiTouchType.POINTER_HOLD
+        assert curr_gest.state == enums.MultiTouchState.POINTER_HOLD
         assert curr_gest.first is first
         assert curr_gest.second is second
         assert curr_gest.midpoint.x == 125
@@ -207,10 +207,10 @@ class TestMultiTouchFSMOnUpdate:
             utils.new_touch(100, 120, -1),
         )
         first = utils.new_st_gesture(  # + 19 px
-            enums.SingleTouchType.DRAG, end=(100, 119, -1)
+            enums.SingleTouchState.DRAG, end=(100, 119, -1)
         )
         second = utils.new_st_gesture(  # + 19 px
-            enums.SingleTouchType.DRAG, end=(100, 139, -1)
+            enums.SingleTouchState.DRAG, end=(100, 139, -1)
         )
 
         machine.on_update(first, second)
@@ -226,17 +226,17 @@ class TestMultiTouchFSMOnUpdate:
             utils.new_touch(100, 120, -1),
         )
         first = utils.new_st_gesture(  # + 20 px
-            enums.SingleTouchType.DRAG, end=(100, 120, -1)
+            enums.SingleTouchState.DRAG, end=(100, 120, -1)
         )
         second = utils.new_st_gesture(  # + 20 px
-            enums.SingleTouchType.DRAG, end=(100, 140, -1)
+            enums.SingleTouchState.DRAG, end=(100, 140, -1)
         )
 
         machine.on_update(first, second)
 
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.MultiTouchGesture)
-        assert curr_gest.type == enums.MultiTouchType.PAN
+        assert curr_gest.state == enums.MultiTouchState.PAN
         assert curr_gest.first is first
         assert curr_gest.second is second
         assert curr_gest.midpoint.x == 100
@@ -256,17 +256,17 @@ class TestMultiTouchFSMOnUpdate:
             utils.new_touch(100, 120, -1),
         )
         first = utils.new_st_gesture(  # - 10 px
-            enums.SingleTouchType.DRAG, end=(100, 90, -1)
+            enums.SingleTouchState.DRAG, end=(100, 90, -1)
         )
         second = utils.new_st_gesture(  # + 10 px
-            enums.SingleTouchType.DRAG, end=(100, 130, -1)
+            enums.SingleTouchState.DRAG, end=(100, 130, -1)
         )
 
         machine.on_update(first, second)
 
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.MultiTouchGesture)
-        assert curr_gest.type == enums.MultiTouchType.ZOOM
+        assert curr_gest.state == enums.MultiTouchState.ZOOM
         assert curr_gest.first is first
         assert curr_gest.second is second
         assert curr_gest.midpoint.x == 100
@@ -284,17 +284,17 @@ class TestMultiTouchFSMOnUpdate:
             utils.new_touch(100, 120, -1),
         )
         first = utils.new_st_gesture(
-            enums.SingleTouchType.HOLD, end=(100, 100, -1)
+            enums.SingleTouchState.HOLD, end=(100, 100, -1)
         )
         second = utils.new_st_gesture(  # + 20 px
-            enums.SingleTouchType.DRAG, end=(100, 140, -1)
+            enums.SingleTouchState.DRAG, end=(100, 140, -1)
         )
 
         machine.on_update(first, second)
 
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.MultiTouchGesture)
-        assert curr_gest.type == enums.MultiTouchType.ZOOM
+        assert curr_gest.state == enums.MultiTouchState.ZOOM
         assert curr_gest.first is first
         assert curr_gest.second is second
         assert curr_gest.midpoint.x == 100
@@ -312,17 +312,17 @@ class TestMultiTouchFSMOnUpdate:
             utils.new_touch(100, 0, -1),
         )
         first = utils.new_st_gesture(  # 90 deg
-            enums.SingleTouchType.DRAG, end=(0, 100, -1)
+            enums.SingleTouchState.DRAG, end=(0, 100, -1)
         )
         second = utils.new_st_gesture(  # 90 deg
-            enums.SingleTouchType.DRAG, end=(0, -100, -1)
+            enums.SingleTouchState.DRAG, end=(0, -100, -1)
         )
 
         machine.on_update(first, second)
 
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.MultiTouchGesture)
-        assert curr_gest.type == enums.MultiTouchType.ROTATE
+        assert curr_gest.state == enums.MultiTouchState.ROTATE
         assert curr_gest.first is first
         assert curr_gest.second is second
         assert curr_gest.midpoint.x == 0
@@ -340,10 +340,10 @@ class TestMultiTouchFSMOnUpdate:
             utils.new_touch(100, 120, -1),
         )
         first = utils.new_st_gesture(  # + 20 px - 10 px
-            enums.SingleTouchType.DRAG, end=(100, 110, -1)
+            enums.SingleTouchState.DRAG, end=(100, 110, -1)
         )
         second = utils.new_st_gesture(  # + 20 px + 10 px
-            enums.SingleTouchType.DRAG, end=(100, 150, -1)
+            enums.SingleTouchState.DRAG, end=(100, 150, -1)
         )
 
         machine.on_update(first, second)
@@ -351,8 +351,8 @@ class TestMultiTouchFSMOnUpdate:
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.MultiTouchGesture)
         assert (
-            curr_gest.type
-            == enums.MultiTouchType.PAN | enums.MultiTouchType.ZOOM
+            curr_gest.state
+            == enums.MultiTouchState.PAN | enums.MultiTouchState.ZOOM
         )
         assert curr_gest.first is first
         assert curr_gest.second is second
@@ -373,10 +373,10 @@ class TestMultiTouchFSMOnUpdate:
             utils.new_touch(100, 0, -1),
         )
         first = utils.new_st_gesture(  # 90 deg + 20 px + 10 px
-            enums.SingleTouchType.DRAG, end=(0, 130, -1)
+            enums.SingleTouchState.DRAG, end=(0, 130, -1)
         )
         second = utils.new_st_gesture(  # 90 deg + 20 px - 10 px
-            enums.SingleTouchType.DRAG, end=(0, -90, -1)
+            enums.SingleTouchState.DRAG, end=(0, -90, -1)
         )
 
         machine.on_update(first, second)
@@ -384,10 +384,10 @@ class TestMultiTouchFSMOnUpdate:
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.MultiTouchGesture)
         assert (
-            curr_gest.type
-            == enums.MultiTouchType.PAN
-            | enums.MultiTouchType.ZOOM
-            | enums.MultiTouchType.ROTATE
+            curr_gest.state
+            == enums.MultiTouchState.PAN
+            | enums.MultiTouchState.ZOOM
+            | enums.MultiTouchState.ROTATE
         )
         assert curr_gest.first is first
         assert curr_gest.second is second
@@ -408,10 +408,10 @@ class TestMultiTouchFSMOnUpdate:
             utils.new_touch(100, 0, -1),
         )
         first = utils.new_st_gesture(  # 90 deg + 20 px
-            enums.SingleTouchType.DRAG, end=(0, 120, -1)
+            enums.SingleTouchState.DRAG, end=(0, 120, -1)
         )
         second = utils.new_st_gesture(  # 90 deg + 20 px
-            enums.SingleTouchType.DRAG, end=(0, -80, -1)
+            enums.SingleTouchState.DRAG, end=(0, -80, -1)
         )
 
         machine.on_update(first, second)
@@ -419,8 +419,8 @@ class TestMultiTouchFSMOnUpdate:
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.MultiTouchGesture)
         assert (
-            curr_gest.type
-            == enums.MultiTouchType.PAN | enums.MultiTouchType.ROTATE
+            curr_gest.state
+            == enums.MultiTouchState.PAN | enums.MultiTouchState.ROTATE
         )
         assert curr_gest.first is first
         assert curr_gest.second is second
@@ -441,10 +441,10 @@ class TestMultiTouchFSMOnUpdate:
             utils.new_touch(100, 0, -1),
         )
         first = utils.new_st_gesture(  # 90 deg + 10 px
-            enums.SingleTouchType.DRAG, end=(0, 110, -1)
+            enums.SingleTouchState.DRAG, end=(0, 110, -1)
         )
         second = utils.new_st_gesture(  # 90 deg - 10 px
-            enums.SingleTouchType.DRAG, end=(0, -110, -1)
+            enums.SingleTouchState.DRAG, end=(0, -110, -1)
         )
 
         machine.on_update(first, second)
@@ -452,8 +452,8 @@ class TestMultiTouchFSMOnUpdate:
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.MultiTouchGesture)
         assert (
-            curr_gest.type
-            == enums.MultiTouchType.ZOOM | enums.MultiTouchType.ROTATE
+            curr_gest.state
+            == enums.MultiTouchState.ZOOM | enums.MultiTouchState.ROTATE
         )
         assert curr_gest.first is first
         assert curr_gest.second is second
@@ -515,10 +515,10 @@ class TestMultiTouchFSMOnRelease:
         machine = multi.MultiTouchFSM()
         machine.current_state_value = machine.down.value
         first = utils.new_st_gesture(
-            enums.SingleTouchType.SWIPE, direction=enums.Direction.LEFT
+            enums.SingleTouchState.SWIPE, direction=enums.Direction.LEFT
         )
         second = utils.new_st_gesture(
-            enums.SingleTouchType.SWIPE, direction=enums.Direction.RIGHT
+            enums.SingleTouchState.SWIPE, direction=enums.Direction.RIGHT
         )
 
         machine.on_release(first, second)  # SWIPE directions are not equal
@@ -530,47 +530,47 @@ class TestMultiTouchFSMOnRelease:
         machine = multi.MultiTouchFSM()
         machine.current_state_value = machine.transforming.value
         first = utils.new_st_gesture(
-            enums.SingleTouchType.FAST_TAP, end=(15, 10, -1)
+            enums.SingleTouchState.FAST_TAP, end=(15, 10, -1)
         )
         second = utils.new_st_gesture(
-            enums.SingleTouchType.FAST_TAP, end=(5, 10, -1)
+            enums.SingleTouchState.FAST_TAP, end=(5, 10, -1)
         )
 
         machine.on_release(first, second)
 
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.MultiTouchGesture)
-        assert curr_gest.type == enums.MultiTouchType.FAST_TAP
+        assert curr_gest.state == enums.MultiTouchState.FAST_TAP
         assert curr_gest.first is first
         assert curr_gest.second is second
         assert curr_gest.midpoint.x == 10
         assert curr_gest.midpoint.y == 10
 
     @pytest.mark.parametrize(
-        ("first_type", "second_type"),
+        ("first_state", "second_state"),
         [
-            (enums.SingleTouchType.HOLD, enums.SingleTouchType.FAST_TAP),
-            (enums.SingleTouchType.DRAG, enums.SingleTouchType.FAST_TAP),
-            (enums.SingleTouchType.FAST_TAP, enums.SingleTouchType.HOLD),
-            (enums.SingleTouchType.FAST_TAP, enums.SingleTouchType.DRAG),
+            (enums.SingleTouchState.HOLD, enums.SingleTouchState.FAST_TAP),
+            (enums.SingleTouchState.DRAG, enums.SingleTouchState.FAST_TAP),
+            (enums.SingleTouchState.FAST_TAP, enums.SingleTouchState.HOLD),
+            (enums.SingleTouchState.FAST_TAP, enums.SingleTouchState.DRAG),
         ],
     )
     def test_on_release_creates_anchor_tap_gesture(
         self,
-        first_type: enums.SingleTouchType,
-        second_type: enums.SingleTouchType,
+        first_state: enums.SingleTouchState,
+        second_state: enums.SingleTouchState,
     ) -> None:
         """Generates an ANCHOR TAP gesture."""
         machine = multi.MultiTouchFSM()
         machine.current_state_value = machine.down.value
-        first = utils.new_st_gesture(first_type, end=(15, 10, -1))
-        second = utils.new_st_gesture(second_type, end=(5, 10, -1))
+        first = utils.new_st_gesture(first_state, end=(15, 10, -1))
+        second = utils.new_st_gesture(second_state, end=(5, 10, -1))
 
         machine.on_release(first, second)
 
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.MultiTouchGesture)
-        assert curr_gest.type == enums.MultiTouchType.ANCHOR_TAP
+        assert curr_gest.state == enums.MultiTouchState.ANCHOR_TAP
         assert curr_gest.first is first
         assert curr_gest.second is second
         assert curr_gest.midpoint.x == 10
@@ -586,17 +586,17 @@ class TestMultiTouchFSMOnRelease:
         machine = multi.MultiTouchFSM()
         machine.current_state_value = machine.down.value
         first = utils.new_st_gesture(
-            enums.SingleTouchType.SWIPE, direction=direction, end=(15, 10, -1)
+            enums.SingleTouchState.SWIPE, direction=direction, end=(15, 10, -1)
         )
         second = utils.new_st_gesture(
-            enums.SingleTouchType.SWIPE, direction=direction, end=(5, 10, -1)
+            enums.SingleTouchState.SWIPE, direction=direction, end=(5, 10, -1)
         )
 
         machine.on_release(first, second)
 
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.MultiTouchGesture)
-        assert curr_gest.type == enums.MultiTouchType.FLICK
+        assert curr_gest.state == enums.MultiTouchState.FLICK
         assert curr_gest.first is first
         assert curr_gest.second is second
         assert curr_gest.midpoint.x == 10
@@ -604,28 +604,28 @@ class TestMultiTouchFSMOnRelease:
         assert curr_gest.direction == direction
 
     @pytest.mark.parametrize(
-        ("first_type", "second_type"),
+        ("first_state", "second_state"),
         [
-            (enums.SingleTouchType.RELEASE, enums.SingleTouchType.HOLD),
-            (enums.SingleTouchType.HOLD, enums.SingleTouchType.RELEASE),
+            (enums.SingleTouchState.RELEASE, enums.SingleTouchState.HOLD),
+            (enums.SingleTouchState.HOLD, enums.SingleTouchState.RELEASE),
         ],
     )
     def test_on_release_creates_pointer_up_gesture(
         self,
-        first_type: enums.SingleTouchType,
-        second_type: enums.SingleTouchType,
+        first_state: enums.SingleTouchState,
+        second_state: enums.SingleTouchState,
     ) -> None:
         """Generates a POINTER UP gesture."""
         machine = multi.MultiTouchFSM()
         machine.current_state_value = machine.down.value
-        first = utils.new_st_gesture(first_type, end=(15, 10, -1))
-        second = utils.new_st_gesture(second_type, end=(5, 10, -1))
+        first = utils.new_st_gesture(first_state, end=(15, 10, -1))
+        second = utils.new_st_gesture(second_state, end=(5, 10, -1))
 
         machine.on_release(first, second)
 
         curr_gest = machine._current_gesture
         assert isinstance(curr_gest, models.MultiTouchGesture)
-        assert curr_gest.type == enums.MultiTouchType.POINTER_UP
+        assert curr_gest.state == enums.MultiTouchState.POINTER_UP
         assert curr_gest.first is first
         assert curr_gest.second is second
         assert curr_gest.midpoint.x == 10
@@ -667,14 +667,14 @@ class TestMultiTouchFSMGenerateGesture:
         assert machine._start_first is down_first.end
         assert machine._start_second is down_second.end
         assert isinstance(result, models.MultiTouchGesture)
-        assert result.type == enums.MultiTouchType.POINTER_DOWN
+        assert result.state == enums.MultiTouchState.POINTER_DOWN
 
     def test_generate_down_to_up(self) -> None:
         """POINTER DOWN -> POINTER UP -> return."""
         machine = multi.MultiTouchFSM()
         down_first = utils.new_st_gesture()
         down_second = utils.new_st_gesture()
-        up_first = utils.new_st_gesture(enums.SingleTouchType.RELEASE)
+        up_first = utils.new_st_gesture(enums.SingleTouchState.RELEASE)
         up_second = utils.new_st_gesture()
 
         machine.generate_gesture(down_first, down_second)
@@ -684,14 +684,14 @@ class TestMultiTouchFSMGenerateGesture:
         assert machine._start_first is down_first.end
         assert machine._start_second is down_second.end
         assert isinstance(result, models.MultiTouchGesture)
-        assert result.type == enums.MultiTouchType.POINTER_UP
+        assert result.state == enums.MultiTouchState.POINTER_UP
 
     def test_generate_down_to_up_to_down(self) -> None:
         """POINTER DOWN -> POINTER UP -> POINTER DOWN -> return."""
         machine = multi.MultiTouchFSM()
         down_first = utils.new_st_gesture()
         down_second = utils.new_st_gesture()
-        up_first = utils.new_st_gesture(enums.SingleTouchType.RELEASE)
+        up_first = utils.new_st_gesture(enums.SingleTouchState.RELEASE)
         up_second = utils.new_st_gesture()
         down_first2 = utils.new_st_gesture()
         down_second2 = utils.new_st_gesture()
@@ -704,15 +704,15 @@ class TestMultiTouchFSMGenerateGesture:
         assert machine._start_first is down_first2.end
         assert machine._start_second is down_second2.end
         assert isinstance(result, models.MultiTouchGesture)
-        assert result.type == enums.MultiTouchType.POINTER_DOWN
+        assert result.state == enums.MultiTouchState.POINTER_DOWN
 
     def test_generate_down_to_hold(self) -> None:
         """POINTER DOWN -> POINTER HOLD -> return."""
         machine = multi.MultiTouchFSM()
         down_first = utils.new_st_gesture()
         down_second = utils.new_st_gesture()
-        hold_first = utils.new_st_gesture(enums.SingleTouchType.HOLD)
-        hold_second = utils.new_st_gesture(enums.SingleTouchType.HOLD)
+        hold_first = utils.new_st_gesture(enums.SingleTouchState.HOLD)
+        hold_second = utils.new_st_gesture(enums.SingleTouchState.HOLD)
 
         machine.generate_gesture(down_first, down_second)
         result = machine.generate_gesture(hold_first, hold_second)
@@ -721,17 +721,17 @@ class TestMultiTouchFSMGenerateGesture:
         assert machine._start_first is down_first.end
         assert machine._start_second is down_second.end
         assert isinstance(result, models.MultiTouchGesture)
-        assert result.type == enums.MultiTouchType.POINTER_HOLD
+        assert result.state == enums.MultiTouchState.POINTER_HOLD
 
     def test_generate_down_to_hold_to_up(self) -> None:
         """POINTER DOWN -> POINTER HOLD -> POINTER UP -> return."""
         machine = multi.MultiTouchFSM()
         down_first = utils.new_st_gesture()
         down_second = utils.new_st_gesture()
-        hold_first = utils.new_st_gesture(enums.SingleTouchType.HOLD)
-        hold_second = utils.new_st_gesture(enums.SingleTouchType.HOLD)
-        up_first = utils.new_st_gesture(enums.SingleTouchType.RELEASE)
-        up_second = utils.new_st_gesture(enums.SingleTouchType.HOLD)
+        hold_first = utils.new_st_gesture(enums.SingleTouchState.HOLD)
+        hold_second = utils.new_st_gesture(enums.SingleTouchState.HOLD)
+        up_first = utils.new_st_gesture(enums.SingleTouchState.RELEASE)
+        up_second = utils.new_st_gesture(enums.SingleTouchState.HOLD)
 
         machine.generate_gesture(down_first, down_second)
         machine.generate_gesture(hold_first, hold_second)
@@ -741,20 +741,20 @@ class TestMultiTouchFSMGenerateGesture:
         assert machine._start_first is down_first.end
         assert machine._start_second is down_second.end
         assert isinstance(result, models.MultiTouchGesture)
-        assert result.type == enums.MultiTouchType.POINTER_UP
+        assert result.state == enums.MultiTouchState.POINTER_UP
 
     def test_generate_down_to_hold_to_pan(self) -> None:
         """POINTER DOWN -> POINTER HOLD -> transform (PAN) -> return."""
         machine = multi.MultiTouchFSM(config=self.test_config)
         down_first = utils.new_st_gesture(end=(0, 100, -1))
         down_second = utils.new_st_gesture(end=(0, 100, -1))
-        hold_first = utils.new_st_gesture(enums.SingleTouchType.HOLD)
-        hold_second = utils.new_st_gesture(enums.SingleTouchType.HOLD)
+        hold_first = utils.new_st_gesture(enums.SingleTouchState.HOLD)
+        hold_second = utils.new_st_gesture(enums.SingleTouchState.HOLD)
         pan_first = utils.new_st_gesture(
-            enums.SingleTouchType.DRAG, end=(0, 120, -1)
+            enums.SingleTouchState.DRAG, end=(0, 120, -1)
         )
         pan_second = utils.new_st_gesture(
-            enums.SingleTouchType.DRAG, end=(0, 120, -1)
+            enums.SingleTouchState.DRAG, end=(0, 120, -1)
         )
 
         machine.generate_gesture(down_first, down_second)
@@ -765,7 +765,7 @@ class TestMultiTouchFSMGenerateGesture:
         assert machine._start_first is down_first.end
         assert machine._start_second is down_second.end
         assert isinstance(result, models.MultiTouchGesture)
-        assert result.type == enums.MultiTouchType.PAN
+        assert result.state == enums.MultiTouchState.PAN
 
     def test_generate_down_to_pan(self) -> None:
         """POINTER DOWN -> transform (PAN) -> return."""
@@ -773,10 +773,10 @@ class TestMultiTouchFSMGenerateGesture:
         down_first = utils.new_st_gesture(end=(0, 100, -1))
         down_second = utils.new_st_gesture(end=(0, 100, -1))
         pan_first = utils.new_st_gesture(
-            enums.SingleTouchType.DRAG, end=(0, 120, -1)
+            enums.SingleTouchState.DRAG, end=(0, 120, -1)
         )
         pan_second = utils.new_st_gesture(
-            enums.SingleTouchType.DRAG, end=(0, 120, -1)
+            enums.SingleTouchState.DRAG, end=(0, 120, -1)
         )
 
         machine.generate_gesture(down_first, down_second)
@@ -786,7 +786,7 @@ class TestMultiTouchFSMGenerateGesture:
         assert machine._start_first is down_first.end
         assert machine._start_second is down_second.end
         assert isinstance(result, models.MultiTouchGesture)
-        assert result.type == enums.MultiTouchType.PAN
+        assert result.state == enums.MultiTouchState.PAN
 
     def test_generate_down_to_pan_to_up(self) -> None:
         """POINTER DOWN -> transform (PAN) -> POINTER UP -> return."""
@@ -794,13 +794,13 @@ class TestMultiTouchFSMGenerateGesture:
         down_first = utils.new_st_gesture(end=(0, 100, -1))
         down_second = utils.new_st_gesture(end=(0, 100, -1))
         pan_first = utils.new_st_gesture(
-            enums.SingleTouchType.DRAG, end=(0, 120, -1)
+            enums.SingleTouchState.DRAG, end=(0, 120, -1)
         )
         pan_second = utils.new_st_gesture(
-            enums.SingleTouchType.DRAG, end=(0, 120, -1)
+            enums.SingleTouchState.DRAG, end=(0, 120, -1)
         )
-        up_first = utils.new_st_gesture(enums.SingleTouchType.RELEASE)
-        up_second = utils.new_st_gesture(enums.SingleTouchType.DRAG)
+        up_first = utils.new_st_gesture(enums.SingleTouchState.RELEASE)
+        up_second = utils.new_st_gesture(enums.SingleTouchState.DRAG)
 
         machine.generate_gesture(down_first, down_second)
         machine.generate_gesture(pan_first, pan_second)
@@ -810,7 +810,7 @@ class TestMultiTouchFSMGenerateGesture:
         assert machine._start_first is down_first.end
         assert machine._start_second is down_second.end
         assert isinstance(result, models.MultiTouchGesture)
-        assert result.type == enums.MultiTouchType.POINTER_UP
+        assert result.state == enums.MultiTouchState.POINTER_UP
 
     def test_generate_down_to_transform_none(self) -> None:
         """POINTER DOWN -> transform (None) -> return."""
@@ -818,10 +818,10 @@ class TestMultiTouchFSMGenerateGesture:
         down_first = utils.new_st_gesture(end=(0, 100, -1))
         down_second = utils.new_st_gesture(end=(0, 100, -1))
         transform_first = utils.new_st_gesture(
-            enums.SingleTouchType.DRAG, end=(0, 119, -1)
+            enums.SingleTouchState.DRAG, end=(0, 119, -1)
         )
         transform_second = utils.new_st_gesture(
-            enums.SingleTouchType.DRAG, end=(0, 119, -1)
+            enums.SingleTouchState.DRAG, end=(0, 119, -1)
         )
 
         machine.generate_gesture(down_first, down_second)
@@ -838,13 +838,13 @@ class TestMultiTouchFSMGenerateGesture:
         down_first = utils.new_st_gesture(end=(0, 100, -1))
         down_second = utils.new_st_gesture(end=(0, 100, -1))
         transform_first = utils.new_st_gesture(
-            enums.SingleTouchType.DRAG, end=(0, 119, -1)
+            enums.SingleTouchState.DRAG, end=(0, 119, -1)
         )
         transform_second = utils.new_st_gesture(
-            enums.SingleTouchType.DRAG, end=(0, 119, -1)
+            enums.SingleTouchState.DRAG, end=(0, 119, -1)
         )
-        up_first = utils.new_st_gesture(enums.SingleTouchType.RELEASE)
-        up_second = utils.new_st_gesture(enums.SingleTouchType.DRAG)
+        up_first = utils.new_st_gesture(enums.SingleTouchState.RELEASE)
+        up_second = utils.new_st_gesture(enums.SingleTouchState.DRAG)
 
         machine.generate_gesture(down_first, down_second)
         machine.generate_gesture(transform_first, transform_second)
@@ -854,4 +854,4 @@ class TestMultiTouchFSMGenerateGesture:
         assert machine._start_first is down_first.end
         assert machine._start_second is down_second.end
         assert isinstance(result, models.MultiTouchGesture)
-        assert result.type == enums.MultiTouchType.POINTER_UP
+        assert result.state == enums.MultiTouchState.POINTER_UP

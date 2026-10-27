@@ -4,8 +4,8 @@
 import enum
 
 
-class SingleTouchType(enum.Enum):
-    """Identifier for types of single-touch gestures."""
+class SingleTouchState(enum.Enum):
+    """Identifiers for the states of single-touch gestures."""
 
     # Form of (value, is_lifecycle_end)
     FAST_TAP = (enum.auto(), True)
@@ -20,7 +20,7 @@ class SingleTouchType(enum.Enum):
         self.is_lifecycle_end = is_lifecycle_end
 
 
-class MultiTouchType(enum.Flag):
+class MultiTouchState(enum.Flag):
     """Bitmask flags tracking combined multi-touch states."""
 
     NO_OP = enum.auto()  # Internal use only

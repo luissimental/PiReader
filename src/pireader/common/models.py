@@ -69,8 +69,8 @@ class SingleTouchGesture:
     """The data of a single-touch gesture.
 
     Attributes:
-      type:
-        The type of single-touch gesture.
+      state:
+        The state of the single-touch gesture.
       start:
         The starting point of the gesture.
       end:
@@ -80,7 +80,7 @@ class SingleTouchGesture:
 
     """
 
-    type: enums.SingleTouchType
+    state: enums.SingleTouchState
     start: TouchEvent
     end: TouchEvent
 
@@ -92,8 +92,8 @@ class MultiTouchGesture:
     """The data of a multi-touch gesture.
 
     Attributes:
-      type:
-        The type of multi-touch gesture.
+      state:
+        The state of the multi-touch gesture.
       first:
         The first finger's single-touch gesture.
       second:
@@ -111,7 +111,7 @@ class MultiTouchGesture:
 
     """
 
-    type: enums.MultiTouchType
+    state: enums.MultiTouchState
     first: SingleTouchGesture
     second: SingleTouchGesture
     midpoint: TouchEvent = dataclasses.field(init=False)
@@ -126,5 +126,5 @@ class MultiTouchGesture:
         midpoint = self.first.end.midpoint_to(self.second.end)
         object.__setattr__(self, "midpoint", midpoint)
 
-        if self.type == enums.MultiTouchType.FLICK:
+        if self.state == enums.MultiTouchState.FLICK:
             object.__setattr__(self, "direction", self.first.direction)

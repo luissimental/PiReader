@@ -105,9 +105,7 @@ class SingleTouchFSM(statemachine.StateChart):
     def on_touch_down(self, point: models.TouchEvent) -> None:
         """Generate a DOWN gesture."""
         self._current_gesture = models.SingleTouchGesture(
-            type=enums.SingleTouchType.DOWN,
-            start=point,
-            end=point,
+            state=enums.SingleTouchState.DOWN, start=point, end=point
         )
 
     def on_hold(self, point: models.TouchEvent) -> None:
@@ -117,7 +115,7 @@ class SingleTouchFSM(statemachine.StateChart):
             raise RuntimeError(msg)
 
         self._current_gesture = models.SingleTouchGesture(
-            type=enums.SingleTouchType.HOLD,
+            state=enums.SingleTouchState.HOLD,
             start=self._start_point,
             end=point,
         )
@@ -129,7 +127,7 @@ class SingleTouchFSM(statemachine.StateChart):
             raise RuntimeError(msg)
 
         self._current_gesture = models.SingleTouchGesture(
-            type=enums.SingleTouchType.DRAG,
+            state=enums.SingleTouchState.DRAG,
             start=self._start_point,
             end=point,
         )
@@ -150,7 +148,7 @@ class SingleTouchFSM(statemachine.StateChart):
         # Fast Tap gesture
         if self._conf.fast_tap.threshold_is_met(distance, duration):
             self._current_gesture = models.SingleTouchGesture(
-                type=enums.SingleTouchType.FAST_TAP,
+                state=enums.SingleTouchState.FAST_TAP,
                 start=self._start_point,
                 end=self._last_point,
             )
@@ -162,7 +160,7 @@ class SingleTouchFSM(statemachine.StateChart):
             else:
                 dr = enums.Direction.DOWN if dy > 0 else enums.Direction.UP
             self._current_gesture = models.SingleTouchGesture(
-                type=enums.SingleTouchType.SWIPE,
+                state=enums.SingleTouchState.SWIPE,
                 start=self._start_point,
                 end=self._last_point,
                 direction=dr,
@@ -170,7 +168,7 @@ class SingleTouchFSM(statemachine.StateChart):
         # Release gesture
         else:
             self._current_gesture = models.SingleTouchGesture(
-                type=enums.SingleTouchType.RELEASE,
+                state=enums.SingleTouchState.RELEASE,
                 start=self._start_point,
                 end=self._last_point,
             )
