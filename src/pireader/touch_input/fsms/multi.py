@@ -40,7 +40,7 @@ class MultiTouchFSM(statemachine.StateChart):
         self._conf = config
         self._start_first: models.TouchEvent | None = None
         self._start_second: models.TouchEvent | None = None
-        self._start_midpoint: models.TouchEvent | None = None
+        self._start_midpoint: models.Vector2D | None = None
         self._start_distance = 0.0
         self._start_angle = 0.0
         self._current_gesture: models.MultiTouchGesture | None = None
@@ -79,14 +79,14 @@ class MultiTouchFSM(statemachine.StateChart):
         return self._current_gesture
 
     def _set_up_initial_values(
-        self, first_point: models.TouchEvent, second_point: models.TouchEvent
+        self, first_touch: models.TouchEvent, second_touch: models.TouchEvent
     ) -> None:
         """Set up cached variables."""
-        self._start_first = first_point
-        self._start_second = second_point
-        self._start_midpoint = first_point.midpoint_to(second_point)
-        self._start_distance = first_point.distance_to(second_point)
-        self._start_angle = first_point.degrees_to(second_point)
+        self._start_first = first_touch
+        self._start_second = second_touch
+        self._start_midpoint = first_touch.midpoint_to(second_touch)
+        self._start_distance = first_touch.distance_to(second_touch)
+        self._start_angle = first_touch.degrees_to(second_touch)
 
     # --- Conditions ---
     def _should_hold(
@@ -153,7 +153,7 @@ class MultiTouchFSM(statemachine.StateChart):
             raise RuntimeError(msg)
 
         gesture_state = enums.MultiTouchState.NO_OP
-        offset_vector: models.TouchEvent | None = None
+        offset_vector: models.Vector2D | None = None
         scale_factor = 1.0
 
         # PAN gesture
@@ -162,8 +162,7 @@ class MultiTouchFSM(statemachine.StateChart):
         if is_drag and self._conf.pan.threshold_is_met(
             self._start_midpoint, current_midpoint
         ):
-            dx, dy = self._start_midpoint.vector_to(current_midpoint)
-            offset_vector = models.TouchEvent(-1, dx, dy, -1)
+            offset_vector = current_midpoint - self._start_midpoint
             gesture_state |= enums.MultiTouchState.PAN
 
         # ZOOM gesture

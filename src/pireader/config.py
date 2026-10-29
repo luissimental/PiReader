@@ -19,7 +19,7 @@ TOUCH_INT_PIN = 19
 
 
 # Gesture Configuration
-@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+@dataclasses.dataclass(frozen=True, kw_only=True, slots=True)
 class FastTapConfig:
     """Threshold constants for the FAST TAP gesture."""
 
@@ -31,7 +31,7 @@ class FastTapConfig:
         return distance < self.max_px and duration < self.max_sec
 
 
-@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+@dataclasses.dataclass(frozen=True, kw_only=True, slots=True)
 class SwipeConfig:
     """Threshold constants for the SWIPE gesture."""
 
@@ -43,7 +43,7 @@ class SwipeConfig:
         return distance >= self.min_px and duration < self.max_sec
 
 
-@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+@dataclasses.dataclass(frozen=True, kw_only=True, slots=True)
 class HoldConfig:
     """Threshold constants for the HOLD gesture."""
 
@@ -55,7 +55,7 @@ class HoldConfig:
         return distance < self.max_px and duration >= self.min_sec
 
 
-@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+@dataclasses.dataclass(frozen=True, kw_only=True, slots=True)
 class DragConfig:
     """Threshold constants for the DRAG gesture."""
 
@@ -66,7 +66,7 @@ class DragConfig:
         return distance >= self.min_px
 
 
-@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+@dataclasses.dataclass(frozen=True, kw_only=True, slots=True)
 class PanConfig:
     """Threshold constants for the PAN gesture."""
 
@@ -74,15 +74,15 @@ class PanConfig:
 
     def threshold_is_met(
         self,
-        start_midpoint: models.TouchEvent,
-        current_midpoint: models.TouchEvent,
+        start_midpoint: models.Vector2D,
+        current_midpoint: models.Vector2D,
     ) -> bool:
         """Determine whether the midpoints meet the threshold."""
         distance = start_midpoint.distance_to(current_midpoint)
         return distance >= self.min_px
 
 
-@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+@dataclasses.dataclass(frozen=True, kw_only=True, slots=True)
 class ZoomConfig:
     """Threshold constants for the ZOOM gesture."""
 
@@ -93,7 +93,7 @@ class ZoomConfig:
         return distance >= self.min_px
 
 
-@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+@dataclasses.dataclass(frozen=True, kw_only=True, slots=True)
 class RotateConfig:
     """Threshold constants for the ROTATE gesture."""
 
@@ -104,7 +104,7 @@ class RotateConfig:
         return angular_diff >= self.min_deg
 
 
-@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+@dataclasses.dataclass(frozen=True, kw_only=True, slots=True)
 class GestureConfig:
     """The configurations for each gesture."""
 

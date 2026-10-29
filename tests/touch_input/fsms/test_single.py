@@ -104,6 +104,16 @@ class TestSingleTouchFSMShouldDrag:
 
         assert result is False
 
+    def test_should_drag_returns_false_on_no_last_point(self) -> None:
+        """Dragging state is active and last point is None."""
+        machine = single.SingleTouchFSM()
+        machine.current_state_value = machine.dragging.value
+        machine._start_point = utils.new_touch(-1, -1, -1)
+
+        result = machine._should_drag(utils.new_touch(-1, -1, -1))
+
+        assert result is False
+
 
 # --- Action Hooks ---
 class TestSingleTouchFSMOnTouchDown:

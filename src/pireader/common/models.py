@@ -2,50 +2,87 @@
 
 import dataclasses
 import math
+from typing import TYPE_CHECKING
 
 from pireader.common import enums
 
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
-@dataclasses.dataclass(frozen=True)
+
+@dataclasses.dataclass(frozen=True, slots=True)
+class Vector2D:
+    """The stored x and y coordinates."""
+
+    x: int
+    y: int
+
+    def distance_to(self, other_vector: Vector2D) -> float:
+        """Get the distance between two Vector2D objects."""
+        return math.dist(self, other_vector)
+
+    def __add__(self, other: Vector2D) -> Vector2D:
+        """Addition between two Vector2D objects."""
+        if isinstance(other, Vector2D):
+            return Vector2D(self.x + other.x, self.y + other.y)
+        return NotImplemented  # pragma: no cover
+
+    def __sub__(self, other: Vector2D) -> Vector2D:
+        """Subtraction between two Vector2D objects."""
+        if isinstance(other, Vector2D):
+            return Vector2D(self.x - other.x, self.y - other.y)
+        return NotImplemented  # pragma: no cover
+
+    def __floordiv__(self, other: int) -> Vector2D:
+        """Floor division between a Vector2D object and an int."""
+        if isinstance(other, (int, float)):
+            return Vector2D(self.x // int(other), self.y // int(other))
+        return NotImplemented  # pragma: no cover
+
+    def __iter__(self) -> Iterator[int]:
+        """Return an iterator containing the x and y values."""
+        return iter((self.x, self.y))
+
+
+@dataclasses.dataclass(frozen=True, slots=True)
 class TouchEvent:
     """The data of a touch event.
 
     Attributes:
       id:
         The identifier of which finger is making contact.
-      x:
-        The x-coordinate of the touch.
-      y:
-        The y-coordinate of the touch.
+      vector:
+        The x and y coordinates of the touch.
       timestamp:
         The timestamp of the touch in seconds since epoch.
 
     """
 
     id: int
-    x: int
-    y: int
+    x: dataclasses.InitVar[int]
+    y: dataclasses.InitVar[int]
+    vector: Vector2D = dataclasses.field(init=False)
     timestamp: float
 
-    def vector_to(self, farther_touch: TouchEvent) -> tuple[int, int]:
+    def __post_init__(self, x: int, y: int) -> None:
+        """Assign attributes after init."""
+        object.__setattr__(self, "vector", Vector2D(x, y))
+
+    def vector_to(self, farther_touch: TouchEvent) -> Vector2D:
         """Get the directional x, y offset between two touches."""
-        dx = farther_touch.x - self.x
-        dy = farther_touch.y - self.y
-        return dx, dy
+        return farther_touch.vector - self.vector
 
     def distance_to(self, other_touch: TouchEvent) -> float:
         """Get the distance between two touches."""
-        return math.dist((self.x, self.y), (other_touch.x, other_touch.y))
+        return math.dist(self.vector, other_touch.vector)
 
-    def midpoint_to(self, other_touch: TouchEvent) -> TouchEvent:
+    def midpoint_to(self, other_touch: TouchEvent) -> Vector2D:
         """Get the midpoint vector between two touches."""
-        mx = (self.x + other_touch.x) // 2
-        my = (self.y + other_touch.y) // 2
-        return TouchEvent(-1, mx, my, -1)
+        return (self.vector + other_touch.vector) // 2
 
     def degrees_to(self, other_touch: TouchEvent) -> float:
         """Get the angle in degrees between two touches."""
-        dx, dy = self.vector_to(other_touch)
+        dx, dy = other_touch.vector - self.vector
         rad = math.atan2(dy, dx)
         return math.degrees(rad)
 
@@ -53,18 +90,8 @@ class TouchEvent:
         """Get the timestamp difference between two touches."""
         return later_touch.timestamp - self.timestamp
 
-    def __eq__(self, other: object) -> bool:
-        """Compare x and y values."""
-        if isinstance(other, TouchEvent):
-            return self.x == other.x and self.y == other.y
-        return NotImplemented  # pragma: no cover
 
-    def __hash__(self) -> int:
-        """Hash x and y values."""
-        return hash((self.x, self.y))
-
-
-@dataclasses.dataclass(frozen=True, kw_only=True)
+@dataclasses.dataclass(frozen=True, kw_only=True, slots=True)
 class SingleTouchGesture:
     """The data of a single-touch gesture.
 
@@ -72,9 +99,9 @@ class SingleTouchGesture:
       state:
         The state of the single-touch gesture.
       start:
-        The starting point of the gesture.
+        The starting touch of the gesture.
       end:
-        The ending point of the gesture.
+        The ending touch of the gesture.
       direction:
         The direction of the SWIPE gesture.
 
@@ -87,7 +114,7 @@ class SingleTouchGesture:
     direction: enums.Direction | None = None
 
 
-@dataclasses.dataclass(frozen=True, kw_only=True)
+@dataclasses.dataclass(frozen=True, kw_only=True, slots=True)
 class MultiTouchGesture:
     """The data of a multi-touch gesture.
 
@@ -114,10 +141,10 @@ class MultiTouchGesture:
     state: enums.MultiTouchState
     first: SingleTouchGesture
     second: SingleTouchGesture
-    midpoint: TouchEvent = dataclasses.field(init=False)
+    midpoint: Vector2D = dataclasses.field(init=False)
 
     direction: enums.Direction | None = dataclasses.field(init=False)
-    offset: TouchEvent | None = None
+    offset: Vector2D | None = None
     scale: float = 1.0
     angle: float = 0.0
 

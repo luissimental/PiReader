@@ -51,7 +51,7 @@ class TestMultiTouchFSMShouldHold:
         assert result is False
 
     @pytest.mark.parametrize(
-        "state",
+        "machine_state",
         [
             multi.MultiTouchFSM.idle,
             multi.MultiTouchFSM.holding,
@@ -241,7 +241,7 @@ class TestMultiTouchFSMOnUpdate:
         assert curr_gest.second is second
         assert curr_gest.midpoint.x == 100
         assert curr_gest.midpoint.y == 130
-        assert isinstance(curr_gest.offset, models.TouchEvent)
+        assert isinstance(curr_gest.offset, models.Vector2D)
         assert curr_gest.offset.x == 0
         assert curr_gest.offset.y == 20
         assert math.isclose(curr_gest.scale, 1.0)
@@ -358,7 +358,7 @@ class TestMultiTouchFSMOnUpdate:
         assert curr_gest.second is second
         assert curr_gest.midpoint.x == 100
         assert curr_gest.midpoint.y == 130
-        assert isinstance(curr_gest.offset, models.TouchEvent)
+        assert isinstance(curr_gest.offset, models.Vector2D)
         assert curr_gest.offset.x == 0
         assert curr_gest.offset.y == 20
         assert math.isclose(curr_gest.scale, 2.0)
@@ -393,7 +393,7 @@ class TestMultiTouchFSMOnUpdate:
         assert curr_gest.second is second
         assert curr_gest.midpoint.x == 0
         assert curr_gest.midpoint.y == 20
-        assert isinstance(curr_gest.offset, models.TouchEvent)
+        assert isinstance(curr_gest.offset, models.Vector2D)
         assert curr_gest.offset.x == 0
         assert curr_gest.offset.y == 20
         assert math.isclose(curr_gest.scale, 220 / 200)
@@ -426,7 +426,7 @@ class TestMultiTouchFSMOnUpdate:
         assert curr_gest.second is second
         assert curr_gest.midpoint.x == 0
         assert curr_gest.midpoint.y == 20
-        assert isinstance(curr_gest.offset, models.TouchEvent)
+        assert isinstance(curr_gest.offset, models.Vector2D)
         assert curr_gest.offset.x == 0
         assert curr_gest.offset.y == 20
         assert math.isclose(curr_gest.scale, 1.0)
@@ -468,7 +468,7 @@ class TestMultiTouchFSMOnUpdate:
         machine = multi.MultiTouchFSM()
         machine.current_state_value = machine.transforming.value
         machine._start_second = utils.new_touch(-1, -1, -1)
-        machine._start_midpoint = utils.new_touch(-1, -1, -1)
+        machine._start_midpoint = utils.new_vector2d(-1, -1)
 
         with pytest.raises(RuntimeError):
             machine.on_update(utils.new_st_gesture(), utils.new_st_gesture())
@@ -480,7 +480,7 @@ class TestMultiTouchFSMOnUpdate:
         machine = multi.MultiTouchFSM()
         machine.current_state_value = machine.transforming.value
         machine._start_first = utils.new_touch(-1, -1, -1)
-        machine._start_midpoint = utils.new_touch(-1, -1, -1)
+        machine._start_midpoint = utils.new_vector2d(-1, -1)
 
         with pytest.raises(RuntimeError):
             machine.on_update(utils.new_st_gesture(), utils.new_st_gesture())

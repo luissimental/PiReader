@@ -96,7 +96,9 @@ class SingleTouchFSM(statemachine.StateChart):
 
         # If already dragging, only trigger a transition if finger moved.
         if self.dragging.is_active:
-            return point != self._last_point
+            if self._last_point is None:
+                return False
+            return point.vector != self._last_point.vector
 
         distance = self._start_point.distance_to(point)
         return self._conf.drag.threshold_is_met(distance)
@@ -145,14 +147,14 @@ class SingleTouchFSM(statemachine.StateChart):
         distance = self._start_point.distance_to(self._last_point)
         duration = self._start_point.clock_offset_from(self._last_point)
 
-        # Fast Tap gesture
+        # FAST TAP gesture
         if self._conf.fast_tap.threshold_is_met(distance, duration):
             self._current_gesture = models.SingleTouchGesture(
                 state=enums.SingleTouchState.FAST_TAP,
                 start=self._start_point,
                 end=self._last_point,
             )
-        # Swipe gesture
+        # SWIPE gesture
         elif self._conf.swipe.threshold_is_met(distance, duration):
             dx, dy = self._start_point.vector_to(self._last_point)
             if abs(dx) > abs(dy):
@@ -165,7 +167,7 @@ class SingleTouchFSM(statemachine.StateChart):
                 end=self._last_point,
                 direction=dr,
             )
-        # Release gesture
+        # RELEASE gesture
         else:
             self._current_gesture = models.SingleTouchGesture(
                 state=enums.SingleTouchState.RELEASE,

@@ -307,8 +307,8 @@ class TestTouchDriverReadTouches:
         assert len(result) == 1
         point = result[0]
         assert point.id == 0b0001
-        assert point.x == 0b1011_0010_0010
-        assert point.y == 0b0101_1000_1001
+        assert point.vector.x == 0b1011_0010_0010
+        assert point.vector.y == 0b0101_1000_1001
         assert point.timestamp == 15
 
     def test_read_touches_multi_touch(
@@ -343,13 +343,13 @@ class TestTouchDriverReadTouches:
         assert len(result) == 2
         point1 = result[0]
         assert point1.id == 0b0001
-        assert point1.x == 0b1011_0010_0010
-        assert point1.y == 0b0101_1000_1001
+        assert point1.vector.x == 0b1011_0010_0010
+        assert point1.vector.y == 0b0101_1000_1001
         assert point1.timestamp == 10
         point2 = result[1]
         assert point2.id == 0b0010
-        assert point2.x == 0b0110_1100_0101
-        assert point2.y == 0b0001_0100_1101
+        assert point2.vector.x == 0b0110_1100_0101
+        assert point2.vector.y == 0b0001_0100_1101
         assert point2.timestamp == 10
 
     def test_read_touches_fails_on_inactive_driver(

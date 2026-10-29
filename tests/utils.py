@@ -1,6 +1,11 @@
 from pireader.common import enums, models
 
 
+def new_vector2d(x: int, y: int) -> models.Vector2D:
+    """Create a Vector2D object."""
+    return models.Vector2D(x, y)
+
+
 def new_touch(
     x: int, y: int, timestamp: float, *, id_: int = -1
 ) -> models.TouchEvent:
