@@ -104,6 +104,8 @@ class SingleTouchGesture:
         The ending touch of the gesture.
       direction:
         The direction of the SWIPE gesture.
+      tap_count:
+        The number of taps in the SLOW TAP gesture (double tap, etc.)
 
     """
 
@@ -112,6 +114,7 @@ class SingleTouchGesture:
     end: TouchEvent
 
     direction: enums.Direction | None = None
+    tap_count: int = 0
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True, slots=True)
@@ -129,6 +132,8 @@ class MultiTouchGesture:
         The midpoint between the first and second finger gestures.
       direction:
         The direction of the FLICK gesture.
+      tap_count:
+        The number of taps in the SLOW TAP gesture (double tap, etc.)
       offset:
         The PAN gesture's midpoint offset from first contact.
       scale:
@@ -144,6 +149,7 @@ class MultiTouchGesture:
     midpoint: Vector2D = dataclasses.field(init=False)
 
     direction: enums.Direction | None = dataclasses.field(init=False)
+    tap_count: int = 0
     offset: Vector2D | None = None
     scale: float = 1.0
     angle: float = 0.0

@@ -8,7 +8,8 @@ class SingleTouchState(enum.Enum):
     """Identifiers for the states of single-touch gestures."""
 
     # Form of (value, is_lifecycle_end)
-    FAST_TAP = (enum.auto(), True)
+    FAST_TAP = (enum.auto(), True)  # For tap actions with no tap counts
+    SLOW_TAP = (enum.auto(), True)  # For double tap, triple tap, etc.
     SWIPE = (enum.auto(), True)
     HOLD = (enum.auto(), False)
     DRAG = (enum.auto(), False)
@@ -38,7 +39,8 @@ class MultiTouchState(enum.Flag):
     ROTATE = enum.auto()
 
     # Misc. multi-touch states
-    FAST_TAP = enum.auto()  # Both fingers are in the TAP state
+    FAST_TAP = enum.auto()  # For tap actions with no tap counts
+    SLOW_TAP = enum.auto()  # For double tap, triple tap, etc.
     ANCHOR_TAP = enum.auto()  # One finger is HOLD/DRAG other is FAST TAP
     FLICK = enum.auto()  # Both fingers swiped in one direction
 

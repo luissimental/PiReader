@@ -7,7 +7,7 @@ def new_vector2d(x: int, y: int) -> models.Vector2D:
 
 
 def new_touch(
-    x: int, y: int, timestamp: float, *, id_: int = -1
+    x: int, y: int, timestamp: float, id_: int = -1
 ) -> models.TouchEvent:
     """Create a TouchEvent with default values."""
     return models.TouchEvent(id_, x, y, timestamp)
@@ -31,3 +31,15 @@ def new_st_gesture(
         end=new_touch(*end),
         direction=direction,
     )
+
+
+def new_mt_gesture(
+    state: enums.MultiTouchState = enums.MultiTouchState.POINTER_DOWN,
+    *,
+    first_end: tuple[int, int, int, int] | tuple[int, int, int] | None = None,
+    second_end: tuple[int, int, int, int] | tuple[int, int, int] | None = None,
+) -> models.MultiTouchGesture:
+    """Generate a MultiTouchGesture with default values."""
+    first = new_st_gesture(end=first_end)
+    second = new_st_gesture(end=second_end)
+    return models.MultiTouchGesture(state=state, first=first, second=second)

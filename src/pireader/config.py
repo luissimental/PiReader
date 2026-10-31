@@ -32,6 +32,39 @@ class FastTapConfig:
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True, slots=True)
+class SlowTapConfig:
+    """Threshold constants for the SLOW TAP gesture."""
+
+    max_px: int = 10
+    max_sec: float = 0.2
+
+    def threshold_is_met(self, distance: float, duration: float) -> bool:
+        """Determine whether the distance and duration meet the threshold."""
+        return distance < self.max_px and duration < self.max_sec
+
+    def threshold_is_met_gestures(
+        self,
+        earlier_gesture: models.MultiTouchGesture,
+        later_gesture: models.MultiTouchGesture,
+    ) -> bool:
+        """Determine whether the distnace and duration meet the threshold."""
+        earlier_first = earlier_gesture.first.end
+        earlier_second = earlier_gesture.second.end
+        later_first = later_gesture.first.end
+        later_second = later_gesture.second.end
+
+        distance1 = earlier_first.distance_to(later_first)
+        distance2 = earlier_second.distance_to(later_second)
+
+        duration1 = earlier_first.clock_offset_from(later_first)
+        duration2 = earlier_second.clock_offset_from(later_second)
+
+        threshold1 = self.threshold_is_met(distance1, duration1)
+        threshold2 = self.threshold_is_met(distance2, duration2)
+        return threshold1 and threshold2
+
+
+@dataclasses.dataclass(frozen=True, kw_only=True, slots=True)
 class SwipeConfig:
     """Threshold constants for the SWIPE gesture."""
 
@@ -118,6 +151,9 @@ class GestureConfig:
     pan: PanConfig = PanConfig()
     zoom: ZoomConfig = ZoomConfig()
     rotate: RotateConfig = RotateConfig()
+
+    # Both single-touch and multi-touch gestures
+    slow_tap: SlowTapConfig = SlowTapConfig()
 
 
 GESTURE_CONFIG = GestureConfig()
