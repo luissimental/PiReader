@@ -44,6 +44,19 @@ class TestVector2DSub:
         assert result.y == -25
 
 
+class TestVector2DTrueDiv:
+    """Vector2D __truediv__."""
+
+    def test_truediv_vector_success(self) -> None:
+        """Returns correct vector."""
+        vector = utils.new_vector2d(100, 50)
+
+        result = vector / 2
+
+        assert result.x == 50
+        assert result.y == 25
+
+
 class TestVector2DFloorDiv:
     """Vector2D __floordiv__."""
 

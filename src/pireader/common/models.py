@@ -4,18 +4,35 @@ import dataclasses
 import math
 from typing import TYPE_CHECKING
 
-from pireader.common import enums
+from pireader.common import enums, mixins
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+
+
+def _clip(value: float) -> float:
+    """Clip the value between 0.0 and 1.0."""
+    return max(0.0, min(1.0, value))
+
+
+@dataclasses.dataclass(frozen=True, slots=True)
+class Size:
+    """The width and height properties."""
+
+    width: float = 0.0
+    height: float = 0.0
+
+    def __iter__(self) -> Iterator[float]:
+        """Return an iterator containing the width and height values."""
+        return iter((self.width, self.height))
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
 class Vector2D:
     """The stored x and y coordinates."""
 
-    x: int
-    y: int
+    x: float = 0.0
+    y: float = 0.0
 
     def distance_to(self, other_vector: Vector2D) -> float:
         """Get the distance between two Vector2D objects."""
@@ -33,13 +50,19 @@ class Vector2D:
             return Vector2D(self.x - other.x, self.y - other.y)
         return NotImplemented  # pragma: no cover
 
-    def __floordiv__(self, other: int) -> Vector2D:
-        """Floor division between a Vector2D object and an int."""
+    def __truediv__(self, other: float) -> Vector2D:
+        """Division between a Vector2D object and a float."""
+        if isinstance(other, (int, float)):
+            return Vector2D(self.x / other, self.y / other)
+        return NotImplemented  # pragma: no cover
+
+    def __floordiv__(self, other: float) -> Vector2D:
+        """Floor division between a Vector2D object and an float."""
         if isinstance(other, (int, float)):
             return Vector2D(self.x // int(other), self.y // int(other))
         return NotImplemented  # pragma: no cover
 
-    def __iter__(self) -> Iterator[int]:
+    def __iter__(self) -> Iterator[float]:
         """Return an iterator containing the x and y values."""
         return iter((self.x, self.y))
 
@@ -78,7 +101,7 @@ class TouchEvent:
 
     def midpoint_to(self, other_touch: TouchEvent) -> Vector2D:
         """Get the midpoint vector between two touches."""
-        return (self.vector + other_touch.vector) // 2
+        return (self.vector + other_touch.vector) / 2
 
     def degrees_to(self, other_touch: TouchEvent) -> float:
         """Get the angle in degrees between two touches."""
@@ -161,3 +184,35 @@ class MultiTouchGesture:
 
         if self.state == enums.MultiTouchState.FLICK:
             object.__setattr__(self, "direction", self.first.direction)
+
+
+@dataclasses.dataclass(frozen=True, kw_only=True, slots=True, repr=False)
+class WidgetStyle(mixins.InitReprMixin):
+    """The available styles a widget can have."""
+
+    _repr_dirty_only = True
+
+    background_color: enums.Color | None = None
+    background_opacity: float = 1.0
+    border_color: enums.Color = enums.Color.BLACK
+    border_opacity: float = 1.0
+    border_width: int = 0
+
+    def __post_init__(self) -> None:
+        """Assign attributes after init."""
+        object.__setattr__(
+            self, "background_opacity", _clip(self.background_opacity)
+        )
+        object.__setattr__(self, "border_opacity", _clip(self.border_opacity))
+
+    @property
+    def background_values(self) -> tuple[int, int]:
+        """The background color and opacity [0 - 255] values."""
+        if self.background_color is None:
+            return (enums.Color.WHITE, 0)
+        return (self.background_color, int(self.background_opacity * 255))
+
+    @property
+    def border_values(self) -> tuple[int, float, int]:
+        """The border color, opacity [0.0 - 1.0], and width values."""
+        return (self.border_color, self.border_opacity, self.border_width)

@@ -52,3 +52,16 @@ class Direction(enum.Flag):
     RIGHT = enum.auto()
     UP = enum.auto()
     DOWN = enum.auto()
+
+
+class Color(enum.IntEnum):
+    """The system's supported colors."""
+
+    BLACK = 0
+    DARK_GRAY = 85
+    LIGHT_GRAY = 170
+    WHITE = 255
+
+    def __repr__(self) -> str:
+        """Generate a string representation of the object."""
+        return f"{self.__class__.__name__}.{self.name}"

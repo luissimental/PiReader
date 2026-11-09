@@ -1,7 +1,7 @@
 from pireader.common import enums, models
 
 
-def new_vector2d(x: int, y: int) -> models.Vector2D:
+def new_vector2d(x: float, y: float) -> models.Vector2D:
     """Create a Vector2D object."""
     return models.Vector2D(x, y)
 
