@@ -1,0 +1,57 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  test:
+    name: Pytest & Coverage (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.15"]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          version: "latest"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          uv sync --group dev --python ${{ matrix.python-version }}
+
+      - name: Run Pytest with Coverage
+        run: |
+          uv run pytest \
+            --cov \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term \
+            --junitxml=junit/test-results-${{ matrix.python-version }}.xml
+
+      - name: Upload Test Results (JUnit XML)
+        uses: actions/upload-artifact@v4
+        if: always() && github.actor != 'nektos/act'
+        with:
+          name: pytest-results-${{ matrix.python-version }}
+          path: junit/test-results-${{ matrix.python-version }}.xml
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        if: always() && github.actor != 'nektos/act'
+        with:
+          name: coverage-report-${{ matrix.python-version }}
+          path: coverage.xml

@@ -9,7 +9,7 @@ dependencies = [
     "pillow>=13.0.0",
     "python-statemachine>=3.2.2",
     "smbus2>=0.6.1",
-    "spidev>=3.8",
+    "spidev>=3.8; sys_platform == 'linux'",
 ]
 
 [project.scripts]
@@ -20,18 +20,10 @@ requires = ["uv_build>=0.13.1,<0.14.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
-dev = [
-    "pytest>=9.1.1",
-    "pytest-cov>=7.1.0",
-    "pytest-mock>=3.17.0",
-]
+dev = ["pytest>=9.1.1", "pytest-cov>=7.1.0", "pytest-mock>=3.17.0"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = [
-    "PLR2004",
-    "S101",
-    "SLF001",
-]
+"tests/**/*.py" = ["PLR2004", "S101", "SLF001"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

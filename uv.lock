@@ -161,7 +161,7 @@ dependencies = [
     { name = "pillow" },
     { name = "python-statemachine" },
     { name = "smbus2" },
-    { name = "spidev" },
+    { name = "spidev", marker = "sys_platform == 'linux'" },
 ]
 
 [package.dev-dependencies]
@@ -178,7 +178,7 @@ requires-dist = [
     { name = "pillow", specifier = ">=13.0.0" },
     { name = "python-statemachine", specifier = ">=3.2.2" },
     { name = "smbus2", specifier = ">=0.6.1" },
-    { name = "spidev", specifier = ">=3.8" },
+    { name = "spidev", marker = "sys_platform == 'linux'", specifier = ">=3.8" },
 ]
 
 [package.metadata.requires-dev]
