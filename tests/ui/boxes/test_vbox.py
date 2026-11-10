@@ -22,6 +22,28 @@ class TestVBoxProperties:
 
         assert root._spacing == 20
 
+    @pytest.mark.parametrize(
+        ("attribute", "value", "changes_transform"),
+        [("spacing", 1, True), ("spacing", 0, False)],
+    )
+    def test_properties_invalidate_matrix_caches(
+        self, attribute: str, value: int, changes_transform: bool
+    ) -> None:
+        """Spacing property invalidates matrix cache."""
+        root = vbox.VBox()
+
+        root_local = root.get_local_transform()
+        root_global = root.get_global_transform()
+
+        setattr(root, attribute, value)
+
+        if changes_transform:
+            assert root._local_matrix is None
+            assert root._global_matrix is None
+        else:
+            assert root._local_matrix is root_local
+            assert root._global_matrix is root_global
+
 
 class TestVBoxOnMeasure:
     """VBox _on_measure."""

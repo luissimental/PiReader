@@ -11,8 +11,9 @@ from pireader.render import matrix, paint
 if TYPE_CHECKING:
     from PIL import Image
 
-Vector2D = models.Vector2D
+AffineMatrix = matrix.AffineMatrix
 Size = models.Size
+Vector2D = models.Vector2D
 WidgetStyle = models.WidgetStyle
 
 AUTO = sentinel("AUTO")
@@ -125,6 +126,11 @@ class Widget(mixins.InitReprMixin):
     _scale: Vector2D = field(init=False)
     _rotation: float = field(init=False, default=0.0)
 
+    # --- Composite Pass Output Fields (Cached Data) ---
+    _local_matrix: AffineMatrix | None = field(init=False, default=None)
+    _global_matrix: AffineMatrix | None = field(init=False, default=None)
+    _global_inv_matrix: AffineMatrix | None = field(init=False, default=None)
+
     # --- Paint Pass Input Fields ---
     _style: WidgetStyle | None = field(init=False, default=None)
     _layout: paint.AcceptsImage | None = field(init=False, default=None)
@@ -211,7 +217,9 @@ class Widget(mixins.InitReprMixin):
 
     @offset_x.setter
     def offset_x(self, value: float) -> None:
-        self._offset = Vector2D(value, self._offset.y)
+        if value != self._offset.x:
+            self._offset = Vector2D(value, self._offset.y)
+            self.invalidate_transform_cache()
 
     @property
     def offset_y(self) -> float:
@@ -220,7 +228,9 @@ class Widget(mixins.InitReprMixin):
 
     @offset_y.setter
     def offset_y(self, value: float) -> None:
-        self._offset = Vector2D(self._offset.x, value)
+        if value != self._offset.y:
+            self._offset = Vector2D(self._offset.x, value)
+            self.invalidate_transform_cache()
 
     @property
     def pivot(self) -> Vector2D:
@@ -234,7 +244,9 @@ class Widget(mixins.InitReprMixin):
 
     @pivot_x.setter
     def pivot_x(self, value: float) -> None:
-        self._pivot = Vector2D(value, self._pivot.y)
+        if value != self._pivot.x:
+            self._pivot = Vector2D(value, self._pivot.y)
+            self.invalidate_transform_cache()
 
     @property
     def pivot_y(self) -> float:
@@ -243,7 +255,9 @@ class Widget(mixins.InitReprMixin):
 
     @pivot_y.setter
     def pivot_y(self, value: float) -> None:
-        self._pivot = Vector2D(self._pivot.x, value)
+        if value != self._pivot.y:
+            self._pivot = Vector2D(self._pivot.x, value)
+            self.invalidate_transform_cache()
 
     @property
     def scale(self) -> Vector2D:
@@ -252,7 +266,9 @@ class Widget(mixins.InitReprMixin):
 
     @scale.setter
     def scale(self, value: float) -> None:
-        self._scale = Vector2D(value, value)
+        if value != self._scale.x or value != self._scale.y:
+            self._scale = Vector2D(value, value)
+            self.invalidate_transform_cache()
 
     @property
     def scale_x(self) -> float:
@@ -261,7 +277,9 @@ class Widget(mixins.InitReprMixin):
 
     @scale_x.setter
     def scale_x(self, value: float) -> None:
-        self._scale = Vector2D(value, self._scale.y)
+        if value != self._scale.x:
+            self._scale = Vector2D(value, self._scale.y)
+            self.invalidate_transform_cache()
 
     @property
     def scale_y(self) -> float:
@@ -270,7 +288,9 @@ class Widget(mixins.InitReprMixin):
 
     @scale_y.setter
     def scale_y(self, value: float) -> None:
-        self._scale = Vector2D(self._scale.x, value)
+        if value != self._scale.y:
+            self._scale = Vector2D(self._scale.x, value)
+            self.invalidate_transform_cache()
 
     @property
     def rotation(self) -> float:
@@ -282,7 +302,9 @@ class Widget(mixins.InitReprMixin):
 
     @rotation.setter
     def rotation(self, value: float) -> None:
-        self._rotation = value
+        if value != self._rotation:
+            self._rotation = value
+            self.invalidate_transform_cache()
 
     @property
     def widget_origin(self) -> Vector2D:
@@ -324,15 +346,17 @@ class Widget(mixins.InitReprMixin):
 
         self._children.append(child)
         child._set_parent(self)
+        child.invalidate_global_transform_cache()
 
     def remove_child(self, child: Widget) -> None:
         """Remove a child from this widget."""
-        if child in self._children:
-            self._children.remove(child)
-            child._set_parent(None)
-        else:
+        if child not in self._children:
             msg = f"{child} is not a child of {self}"
             raise ValueError(msg)
+
+        self._children.remove(child)
+        child._set_parent(None)
+        child.invalidate_global_transform_cache()
 
     # --- Layout Pass: Measure ---
     def measure(
@@ -420,7 +444,12 @@ class Widget(mixins.InitReprMixin):
         final_w = self._desired_size.width if final_w is AUTO else final_w
         final_h = self._desired_size.height if final_h is AUTO else final_h
 
-        self._layout_pos = Vector2D(final_x, final_y)
+        # Invalidate cache on position change
+        new_pos = Vector2D(final_x, final_y)
+        if self._layout_pos != new_pos:
+            self.invalidate_transform_cache()
+
+        self._layout_pos = new_pos
         self._layout_size = Size(final_w, final_h)
 
         # Delegate child positioning to subclasses by overriding _on_arrange
@@ -456,18 +485,22 @@ class Widget(mixins.InitReprMixin):
 
         widget_image = self.render_local()
         if widget_image is not None:
-            inv_mat = self.get_global_transform().inverse()
+            inv_mat = self.get_global_inverse_transform()
             paint.draw_screen(inv_mat, widget_image, screen)
 
         for child in self._children:
             child.render_global(screen)
 
     # --- Composite Pass: Local Transformations ---
-    def get_local_transform(self) -> matrix.AffineMatrix:
+    def get_local_transform(self) -> AffineMatrix:
         """Get the local transformation matrix."""
+        # Return cached matrix if not stale
+        if self._local_matrix is not None:
+            return self._local_matrix
+
         x, y = self._layout_pos
         ox, oy = self._offset
-        mat = matrix.AffineMatrix.translation(x + ox, y + oy)
+        mat = AffineMatrix.translation(x + ox, y + oy)
 
         # Scaling factors being zero makes the matrix non-invertible
         scale_x, scale_y = self._scale
@@ -484,23 +517,48 @@ class Widget(mixins.InitReprMixin):
         ):
             px, py = self._pivot
 
-            pivot = matrix.AffineMatrix.translation(px, py)
-            inv_pivot = matrix.AffineMatrix.translation(-px, -py)
-            rot = matrix.AffineMatrix.rotation(-self._rotation)
-            sc = matrix.AffineMatrix.scaling(scale_x, scale_y)
+            pivot = AffineMatrix.translation(px, py)
+            inv_pivot = AffineMatrix.translation(-px, -py)
+            rot = AffineMatrix.rotation(-self._rotation)
+            sc = AffineMatrix.scaling(scale_x, scale_y)
 
             local_transform = rot.multiply(sc).multiply(inv_pivot)
             mat = mat.multiply(pivot).multiply(local_transform)
 
+        self._local_matrix = mat
         return mat
 
     # --- Composite Pass: Global Transformations ---
-    def get_global_transform(self) -> matrix.AffineMatrix:
+    def get_global_transform(self) -> AffineMatrix:
         """Get the global transformation matrix."""
-        local = self.get_local_transform()
+        # Return cached matrix if not stale
+        if self._global_matrix is not None:
+            return self._global_matrix
+
+        mat = self.get_local_transform()
         if self.parent is not None:
-            return self.parent.get_global_transform().multiply(local)
-        return local
+            mat = self.parent.get_global_transform().multiply(mat)
+        self._global_matrix = mat
+        return mat
+
+    def get_global_inverse_transform(self) -> AffineMatrix:
+        """Get the inverse of the global transformation matrix."""
+        if self._global_inv_matrix is None:
+            self._global_inv_matrix = self.get_global_transform().inverse()
+        return self._global_inv_matrix
+
+    # --- Cache Invalidation ---
+    def invalidate_transform_cache(self) -> None:
+        """Invalidate this widget's local and subtree global matrices."""
+        self._local_matrix = None
+        self.invalidate_global_transform_cache()
+
+    def invalidate_global_transform_cache(self) -> None:
+        """Invalidate global matrices and inverses for this subtree."""
+        self._global_matrix = None
+        self._global_inv_matrix = None
+        for child in self._children:
+            child.invalidate_global_transform_cache()
 
     # --- Miscellaneous ---
     def local_to_screen(self, local_x: float, local_y: float) -> Vector2D:
@@ -510,7 +568,7 @@ class Widget(mixins.InitReprMixin):
 
     def screen_to_local(self, screen_x: float, screen_y: float) -> Vector2D:
         """Convert screen coordinates to local coordinates."""
-        inv_global_mat = self.get_global_transform().inverse()
+        inv_global_mat = self.get_global_inverse_transform()
         return inv_global_mat.transform_point(screen_x, screen_y)
 
     def hit_test(self, screen_x: float, screen_y: float) -> bool:

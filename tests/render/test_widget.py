@@ -733,6 +733,165 @@ class TestWidgetGetGlobalTransform:
         assert mat.data == pytest.approx([1.5, 0, 14.5, 0, 1, 24])
 
 
+class TestWidgetTransformCache:
+    """Widget cached transformation matrix invalidation."""
+
+    def test_global_inverse_is_computed_lazily_and_cached(self) -> None:
+        """The inverse is only created when requested, then reused."""
+        root = widget.Widget()
+        assert root._global_inv_matrix is None
+
+        inverse = root.get_global_inverse_transform()
+
+        assert root._global_inv_matrix is inverse
+        assert root.get_global_inverse_transform() is inverse
+
+    @pytest.mark.parametrize(
+        ("attribute", "value", "changes_transform"),
+        [
+            ("offset_x", 1.0, True),
+            ("offset_y", 1.0, True),
+            ("pivot_x", 1.0, True),
+            ("pivot_y", 1.0, True),
+            ("scale", 2.0, True),
+            ("scale_x", 2.0, True),
+            ("scale_y", 2.0, True),
+            ("rotation", 45.0, True),
+            ("offset_x", 0.0, False),
+            ("offset_y", 0.0, False),
+            ("pivot_x", 0.0, False),
+            ("pivot_y", 0.0, False),
+            ("scale", 1.0, False),
+            ("scale_x", 1.0, False),
+            ("scale_y", 1.0, False),
+            ("rotation", 0.0, False),
+        ],
+    )
+    def test_transform_properties_invalidate_expected_caches(
+        self, attribute: str, value: float, changes_transform: bool
+    ) -> None:
+        """Transform updates invalidate local and descendant global caches."""
+        root = widget.Widget()
+        child = widget.Widget()
+        root.add_child(child)
+
+        root_local = root.get_local_transform()
+        root_global = root.get_global_transform()
+        root_inverse = root.get_global_inverse_transform()
+        child_local = child.get_local_transform()
+        child_global = child.get_global_transform()
+        child_inverse = child.get_global_inverse_transform()
+
+        setattr(root, attribute, value)
+
+        if changes_transform:
+            assert root._local_matrix is None
+            assert root._global_matrix is None
+            assert root._global_inv_matrix is None
+            assert child._local_matrix is child_local
+            assert child._global_matrix is None
+            assert child._global_inv_matrix is None
+        else:
+            assert root._local_matrix is root_local
+            assert root._global_matrix is root_global
+            assert root._global_inv_matrix is root_inverse
+            assert child._local_matrix is child_local
+            assert child._global_matrix is child_global
+            assert child._global_inv_matrix is child_inverse
+
+    def test_reparenting_invalidates_only_global_caches(self) -> None:
+        """Reparenting changes descendant global but not local matrices."""
+        parent = widget.Widget()
+        new_parent = widget.Widget()
+        child = widget.Widget()
+        grandchild = widget.Widget()
+        parent.add_child(child)
+        child.add_child(grandchild)
+
+        child_local = child.get_local_transform()
+        grandchild_local = grandchild.get_local_transform()
+        child.get_global_transform()
+        grandchild.get_global_transform()
+        child.get_global_inverse_transform()
+        grandchild.get_global_inverse_transform()
+
+        new_parent.add_child(child)
+
+        assert child._local_matrix is child_local
+        assert grandchild._local_matrix is grandchild_local
+        assert child._global_matrix is None
+        assert grandchild._global_matrix is None
+        assert child._global_inv_matrix is None
+        assert grandchild._global_inv_matrix is None
+
+    def test_arrange_invalidates_only_when_position_changes(self) -> None:
+        """Changed position invalidates matrices; size doesn't."""
+        root = widget.Widget()
+        child = widget.Widget()
+        root.add_child(child)
+        root._desired_size = models.Size(100.0, 50.0)
+        child._desired_pos = models.Vector2D(10.0, 20.0)
+
+        root.arrange()
+        root_local = root.get_local_transform()
+        root_global = root.get_global_transform()
+        root_inverse = root.get_global_inverse_transform()
+        child_local = child.get_local_transform()
+        child_global = child.get_global_transform()
+        child_inverse = child.get_global_inverse_transform()
+
+        root.arrange(final_w=120.0)
+
+        assert root._local_matrix is root_local
+        assert root._global_matrix is root_global
+        assert root._global_inv_matrix is root_inverse
+        assert child._local_matrix is child_local
+        assert child._global_matrix is child_global
+        assert child._global_inv_matrix is child_inverse
+
+        root.arrange(final_x=20.0)
+
+        assert root._local_matrix is None
+        assert root._global_matrix is None
+        assert root._global_inv_matrix is None
+        assert child._local_matrix is child_local
+        assert child._global_matrix is None
+        assert child._global_inv_matrix is None
+
+    def test_paint_properties_do_not_invalidate_transform_caches(self) -> None:
+        """Style and layout changes leave transformation matrices cached."""
+        root = widget.Widget()
+        root.get_local_transform()
+        root.get_global_transform()
+        root.get_global_inverse_transform()
+        local = root._local_matrix
+        global_ = root._global_matrix
+        global_inverse = root._global_inv_matrix
+
+        root.style = models.WidgetStyle()
+
+        def draw_layout(_image: object) -> None:
+            pass
+
+        root.layout = draw_layout
+
+        assert root._local_matrix is local
+        assert root._global_matrix is global_
+        assert root._global_inv_matrix is global_inverse
+
+    def test_inverse_cache_is_refreshed_after_transform_change(self) -> None:
+        """A changed transform produces a new cached inverse."""
+        root = widget.Widget()
+        old_inverse = root.get_global_inverse_transform()
+
+        root.offset_x = 10.0
+        new_inverse = root.get_global_inverse_transform()
+        local_origin = new_inverse.transform_point(10.0, 0.0)
+
+        assert new_inverse is not old_inverse
+        assert (local_origin.x, local_origin.y) == pytest.approx((0.0, 0.0))
+
+
 class TestWidgetHitTest:
     """Widget hit_test."""
 

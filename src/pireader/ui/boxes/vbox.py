@@ -38,7 +38,9 @@ class VBox(widget.Widget):
 
     @spacing.setter
     def spacing(self, value: int) -> None:
-        self._spacing = value
+        if value != self._spacing:
+            self._spacing = value
+            self.invalidate_transform_cache()
 
     @override
     def _on_measure(

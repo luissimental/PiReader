@@ -23,7 +23,7 @@ build-backend = "uv_build"
 dev = ["pytest>=9.1.1", "pytest-cov>=7.1.0", "pytest-mock>=3.17.0"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["PLR2004", "S101", "SLF001"]
+"tests/**/*.py" = ["FBT001", "PLR2004", "S101", "SLF001"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
